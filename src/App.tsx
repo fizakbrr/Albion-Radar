@@ -362,7 +362,7 @@ function AppShell({
 function BrandButton({ onClick }: { onClick: () => void }) {
   return (
     <Button variant="ghost" className="h-auto justify-start gap-4 px-0 py-1 text-left hover:bg-transparent" onClick={onClick}>
-      <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-[4.75rem] w-[4.75rem] shrink-0 object-contain" />
+      <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-19 w-19 shrink-0 object-contain" />
       <span className="grid gap-1">
         <span className="text-lg font-[780] leading-none">Camel Radar</span>
         <span className="text-sm font-medium text-muted-foreground">local capture UI</span>
@@ -502,7 +502,7 @@ function SettingSwitch({
 
 function PlayersPage() {
   return (
-    <section className="w-full max-w-[1360px]">
+    <section className="w-full max-w-340">
       <PageHeader
         eyebrow="Player detection"
         title="Tune the radar before you launch."
@@ -572,7 +572,7 @@ function PlayersPage() {
 
 function ResourcesPage() {
   return (
-    <section className="w-full max-w-[1360px]">
+    <section className="w-full max-w-340">
       <PageHeader
         eyebrow="Harvestables"
         title="Resource filters without visual clutter."
@@ -692,7 +692,7 @@ function EnemiesPage() {
   }
 
   return (
-    <section className="w-full max-w-[1360px]">
+    <section className="w-full max-w-340">
       <PageHeader
         eyebrow="Enemy signals"
         title="Keep the enemy feed deliberate."
@@ -770,7 +770,7 @@ function EnemiesPage() {
 
 function SignalsPage() {
   return (
-    <section className="w-full max-w-[1360px]">
+    <section className="w-full max-w-340">
       <PageHeader
         eyebrow="Other signals"
         title="Chests, mists, dungeons, and cages."
@@ -1079,7 +1079,7 @@ function RadarWindow() {
             <CardDescription>500 x 500 live overlay stack</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative size-[500px] max-w-full overflow-hidden rounded-lg border bg-zinc-950">
+            <div className="relative size-125 max-w-full overflow-hidden rounded-lg border bg-zinc-950">
               <canvas className="absolute inset-0" id="mapCanvas" width="500" height="500" />
               <canvas className="absolute inset-0" id="gridCanvas" width="500" height="500" />
               <canvas className="absolute inset-0" id="drawCanvas" width="500" height="500" />
@@ -1095,7 +1095,7 @@ function RadarWindow() {
             <CardDescription>Player equipment stream</CardDescription>
           </CardHeader>
           <CardContent>
-            <canvas id="thirdCanvas" width="500" height="500" className="h-[500px] w-full rounded-lg border bg-zinc-950" />
+            <canvas id="thirdCanvas" width="500" height="500" className="h-125 w-full rounded-lg border bg-zinc-950" />
           </CardContent>
         </Card>
       </div>
@@ -1118,7 +1118,7 @@ function ItemsWindow() {
           <CardDescription>Equipment appears here when player packets include item data.</CardDescription>
         </CardHeader>
         <CardContent>
-          <canvas id="thirdCanvas" width="500" height="500" className="h-[500px] w-full rounded-lg border bg-zinc-950" />
+          <canvas id="thirdCanvas" width="500" height="500" className="h-125 w-full rounded-lg border bg-zinc-950" />
         </CardContent>
       </Card>
       <p id="itemsStatus" data-state="loading" className="sr-only">
@@ -1150,7 +1150,7 @@ function ToolSurface({
         <Card>
           <CardHeader className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div className="flex items-center gap-3">
-              <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-[4.75rem] w-[4.75rem] shrink-0 object-contain" />
+              <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-19 w-19 shrink-0 object-contain" />
               <div>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
