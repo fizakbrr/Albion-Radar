@@ -8,7 +8,6 @@ import {
   CircleOff,
   Compass,
   Database,
-  ExternalLink,
   Eye,
   Map,
   Menu,
@@ -16,7 +15,6 @@ import {
   PackageSearch,
   Radar,
   RotateCcw,
-  ShieldAlert,
   Sun,
   Swords,
   Trash2,
@@ -25,7 +23,6 @@ import {
 } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -82,42 +79,42 @@ const navItems: NavItem[] = [
     key: "players",
     path: "/home",
     label: "PvP & Players",
-    description: "Detection, alerts, and player filtering",
+    description: "Detection and alerts",
     icon: Users,
   },
   {
     key: "resources",
     path: "/resources",
     label: "Resources",
-    description: "Harvestable tiers and debug overlays",
+    description: "Tiers and overlays",
     icon: Boxes,
   },
   {
     key: "enemies",
     path: "/enemies",
     label: "Enemies",
-    description: "Mob filters, mists, and health thresholds",
+    description: "Mobs and thresholds",
     icon: Swords,
   },
   {
     key: "signals",
     path: "/chests",
     label: "Other Signals",
-    description: "Chests, dungeons, mists, and cages",
+    description: "Chests, mists, cages",
     icon: Archive,
   },
   {
     key: "map",
     path: "/map",
     label: "Map",
-    description: "Map background rendering",
+    description: "Background rendering",
     icon: Map,
   },
   {
     key: "ignore",
     path: "/ignorelist",
     label: "Ignore List",
-    description: "Names hidden from player alerts",
+    description: "Hidden alert names",
     icon: CircleOff,
   },
 ]
@@ -297,10 +294,10 @@ function AppShell({
   const nav = <Navigation activeKey={activeKey} navigate={navigate} />
 
   return (
-    <div className="min-h-dvh bg-[linear-gradient(135deg,hsl(var(--camel-brand)/0.10),transparent_38%),var(--background)] text-foreground">
-      <div className="grid min-h-dvh lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="hidden border-r bg-sidebar/86 backdrop-blur-xl lg:block">
-          <div className="flex h-dvh flex-col gap-4 p-4">
+    <div className="min-h-dvh bg-[radial-gradient(circle_at_14%_-8%,rgba(177,91,40,0.22),transparent_25rem),linear-gradient(145deg,#0f150f_0%,#090d0a_58%,#11100b_100%)] text-foreground">
+      <div className="grid min-h-dvh lg:grid-cols-[19.5rem_minmax(0,1fr)]">
+        <aside className="hidden border-r bg-sidebar/78 backdrop-blur-xl lg:block">
+          <div className="flex h-dvh flex-col gap-5 p-5">
             <BrandButton onClick={() => navigate("/home")} />
             <Separator />
             <ScrollArea className="min-h-0 flex-1 pr-2">{nav}</ScrollArea>
@@ -310,9 +307,9 @@ function AppShell({
         </aside>
 
         <div className="min-w-0">
-          <header className="sticky top-0 z-30 border-b bg-background/84 backdrop-blur-xl">
-            <div className="flex min-h-16 items-center justify-between gap-3 px-4 lg:px-8">
-              <div className="flex min-w-0 items-center gap-3">
+          <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-xl">
+            <div className="flex min-h-20 items-center justify-between gap-5 px-4 lg:px-9">
+              <div className="flex min-w-0 items-center gap-4">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open navigation">
@@ -323,7 +320,7 @@ function AppShell({
                     <SheetHeader className="sr-only">
                       <SheetTitle>Camel Radar navigation</SheetTitle>
                     </SheetHeader>
-                    <div className="flex h-full flex-col gap-4 p-4">
+                    <div className="flex h-full flex-col gap-5 p-5">
                       <BrandButton onClick={() => navigate("/home")} />
                       <Separator />
                       <ScrollArea className="min-h-0 flex-1 pr-2">{nav}</ScrollArea>
@@ -333,13 +330,8 @@ function AppShell({
                 </Sheet>
 
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="rounded-md">
-                      Local session
-                    </Badge>
-                    <span className="hidden text-sm text-muted-foreground sm:block">{activeItem.description}</span>
-                  </div>
-                  <h1 className="truncate text-lg font-semibold tracking-normal">{activeItem.label}</h1>
+                  <p className="hidden text-sm font-medium text-muted-foreground sm:block">{activeItem.description}</p>
+                  <h1 className="truncate text-xl font-[760] tracking-normal sm:text-2xl">{activeItem.label}</h1>
                 </div>
               </div>
 
@@ -352,15 +344,15 @@ function AppShell({
                   </TooltipTrigger>
                   <TooltipContent>Toggle theme</TooltipContent>
                 </Tooltip>
-                <Button onClick={() => openTool("/drawing", "CamelRadarWindow")}>
+                <Button onClick={() => openTool("/drawing", "CamelRadarWindow")} aria-label="Launch Radar">
                   <Radar />
-                  Launch Radar
+                  <span className="hidden sm:inline">Launch Radar</span>
                 </Button>
               </div>
             </div>
           </header>
 
-          <main className="px-4 py-5 lg:px-8 lg:py-8">{children}</main>
+          <main className="px-4 py-8 lg:px-12 lg:py-12">{children}</main>
         </div>
       </div>
     </div>
@@ -369,13 +361,11 @@ function AppShell({
 
 function BrandButton({ onClick }: { onClick: () => void }) {
   return (
-    <Button variant="ghost" className="h-auto justify-start gap-3 p-2 text-left" onClick={onClick}>
-      <span className="grid size-12 place-items-center overflow-hidden rounded-lg border bg-card">
-        <img src="/images/camel-logo.png" alt="Camel Radar logo" className="size-10 object-contain" />
-      </span>
-      <span className="grid">
-        <span className="text-base font-semibold leading-none">Camel Radar</span>
-        <span className="text-xs font-medium text-muted-foreground">local capture UI</span>
+    <Button variant="ghost" className="h-auto justify-start gap-4 px-0 py-1 text-left hover:bg-transparent" onClick={onClick}>
+      <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-[4.75rem] w-[4.75rem] shrink-0 object-contain" />
+      <span className="grid gap-1">
+        <span className="text-lg font-[780] leading-none">Camel Radar</span>
+        <span className="text-sm font-medium text-muted-foreground">local capture UI</span>
       </span>
     </Button>
   )
@@ -391,13 +381,13 @@ function Navigation({ activeKey, navigate }: { activeKey: RouteKey; navigate: (p
           <Button
             key={item.key}
             variant={active ? "secondary" : "ghost"}
-            className="h-auto justify-start gap-3 px-3 py-2.5"
+            className="h-auto justify-start gap-3 overflow-hidden px-3 py-3"
             onClick={() => navigate(item.path)}
           >
-            <Icon className="size-4" />
-            <span className="grid text-left">
-              <span className="text-sm font-semibold">{item.label}</span>
-              <span className="line-clamp-1 text-xs font-normal text-muted-foreground">{item.description}</span>
+            <Icon className="size-4 shrink-0" />
+            <span className="grid min-w-0 text-left">
+              <span className="truncate text-[0.95rem] font-[720]">{item.label}</span>
+              <span className="truncate text-[0.82rem] font-medium text-muted-foreground">{item.description}</span>
             </span>
           </Button>
         )
@@ -409,11 +399,11 @@ function Navigation({ activeKey, navigate }: { activeKey: RouteKey; navigate: (p
 function LaunchPanel() {
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm">Live tools</CardTitle>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-base">Live tools</CardTitle>
         <CardDescription>Open the canvas views in focused windows.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-2">
+      <CardContent className="grid gap-3">
         <Button onClick={() => openTool("/drawing", "CamelRadarWindow")}>
           <Radar />
           Radar window
@@ -468,13 +458,13 @@ function PageHeader({
   action?: ReactNode
 }) {
   return (
-    <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+    <div className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
       <div className="max-w-3xl">
-        <Badge variant="outline" className="mb-3 rounded-md">
+        <span className="mb-4 block text-sm font-[760] text-primary">
           {eyebrow}
-        </Badge>
-        <h2 className="text-3xl font-semibold tracking-normal text-balance lg:text-5xl">{title}</h2>
-        <p className="mt-3 max-w-[64ch] text-sm leading-6 text-muted-foreground">{description}</p>
+        </span>
+        <h2 className="text-4xl font-[820] leading-[0.96] tracking-normal text-balance lg:text-6xl">{title}</h2>
+        <p className="mt-5 max-w-[64ch] text-base font-medium leading-7 text-muted-foreground">{description}</p>
       </div>
       {action}
     </div>
@@ -498,12 +488,12 @@ function SettingSwitch({
   const id = `setting-${storageKey}`
 
   return (
-    <div className="flex items-start justify-between gap-4 rounded-lg border bg-background/45 p-3">
-      <div className="grid gap-1">
-        <Label htmlFor={id} className="font-semibold">
+    <div className="flex min-h-24 items-start justify-between gap-5 rounded-lg border bg-background/42 p-4">
+      <div className="grid gap-1.5">
+        <Label htmlFor={id} className="text-[0.98rem] font-[740]">
           {title}
         </Label>
-        <p className="text-sm leading-5 text-muted-foreground">{description}</p>
+        <p className="text-sm font-medium leading-5 text-muted-foreground">{description}</p>
       </div>
       <Switch id={id} checked={checked} onCheckedChange={setChecked} disabled={disabled} />
     </div>
@@ -512,7 +502,7 @@ function SettingSwitch({
 
 function PlayersPage() {
   return (
-    <section className="mx-auto max-w-7xl">
+    <section className="w-full max-w-[1360px]">
       <PageHeader
         eyebrow="Player detection"
         title="Tune the radar before you launch."
@@ -525,13 +515,13 @@ function PlayersPage() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.9fr]">
+      <div className="grid gap-5 xl:grid-cols-[1.45fr_0.95fr]">
         <Card>
           <CardHeader>
             <CardTitle>Display and alerts</CardTitle>
             <CardDescription>Choose what the radar draws and how it alerts you.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2">
+          <CardContent className="grid gap-4 md:grid-cols-2">
             <SettingSwitch
               storageKey="settingDot"
               title="Radar dots"
@@ -554,7 +544,7 @@ function PlayersPage() {
             <CardTitle>Player types</CardTitle>
             <CardDescription>Filter noisy detections without changing packet capture.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3">
+          <CardContent className="grid gap-4">
             <SettingSwitch
               storageKey="settingPassivePlayers"
               title="Passive players"
@@ -582,10 +572,10 @@ function PlayersPage() {
 
 function ResourcesPage() {
   return (
-    <section className="mx-auto max-w-7xl">
+    <section className="w-full max-w-[1360px]">
       <PageHeader
         eyebrow="Harvestables"
-        title="Resource filters without the old grid clutter."
+        title="Resource filters without visual clutter."
         description="Enable tiers and enchant levels for static and living resources. Unavailable low-tier enchant cells stay disabled."
       />
 
@@ -702,7 +692,7 @@ function EnemiesPage() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl">
+    <section className="w-full max-w-[1360px]">
       <PageHeader
         eyebrow="Enemy signals"
         title="Keep the enemy feed deliberate."
@@ -780,7 +770,7 @@ function EnemiesPage() {
 
 function SignalsPage() {
   return (
-    <section className="mx-auto max-w-7xl">
+    <section className="w-full max-w-[1360px]">
       <PageHeader
         eyebrow="Other signals"
         title="Chests, mists, dungeons, and cages."
@@ -867,7 +857,7 @@ function EnchantToggles({ prefix, title }: { prefix: string; title: string }) {
 
 function MapPage() {
   return (
-    <section className="mx-auto max-w-5xl">
+    <section className="w-full max-w-5xl">
       <PageHeader
         eyebrow="Map"
         title="Map rendering stays optional."
@@ -880,11 +870,11 @@ function MapPage() {
           <CardDescription>Map assets are loaded from the local images folder when available.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <SettingSwitch storageKey="settingShowMap" title="Show map background" description="Draw the current cluster map under the radar grid." />
+          <SettingSwitch storageKey="settingShowMap" title="Show map background" description="Draw the current cluster map behind live radar objects." />
           <Alert>
             <Compass className="size-4" />
             <AlertTitle>Optional asset pack</AlertTitle>
-            <AlertDescription>Missing map images no longer crash the UI; the radar continues with a grid-only view.</AlertDescription>
+            <AlertDescription>Missing map images no longer crash the UI; the radar continues with a plain canvas view.</AlertDescription>
           </Alert>
         </CardContent>
       </Card>
@@ -920,7 +910,7 @@ function IgnoreListPage() {
   }
 
   return (
-    <section className="mx-auto max-w-6xl">
+    <section className="w-full max-w-6xl">
       <PageHeader
         eyebrow="Ignore list"
         title="Keep known names out of alerts."
@@ -1017,9 +1007,7 @@ function IgnoreListPage() {
                   <TableRow key={`${entry.Type}-${entry.Name}-${index}`}>
                     <TableCell className="font-medium">{entry.Name}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="rounded-md">
-                        {entry.Type}
-                      </Badge>
+                      <span className="text-sm font-semibold text-primary">{entry.Type}</span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" aria-label={`Remove ${entry.Name}`} onClick={() => removeEntry(index)}>
@@ -1039,7 +1027,7 @@ function IgnoreListPage() {
 
 function NotFoundPage({ path, navigate }: { path: string; navigate: (path: string) => void }) {
   return (
-    <section className="mx-auto max-w-4xl">
+    <section className="w-full max-w-4xl">
       <Card>
         <CardHeader>
           <CardTitle>Page not found</CardTitle>
@@ -1157,14 +1145,12 @@ function ToolSurface({
   children: ReactNode
 }) {
   return (
-    <div className="min-h-dvh bg-background p-4 text-foreground lg:p-6">
+    <div className="min-h-dvh bg-[radial-gradient(circle_at_12%_0%,rgba(237,182,70,0.14),transparent_28rem),linear-gradient(145deg,#0f150f_0%,#090d0a_58%,#11100b_100%)] p-4 text-foreground lg:p-6">
       <div className="mx-auto grid max-w-7xl gap-4">
         <Card>
           <CardHeader className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div className="flex items-center gap-3">
-              <span className="grid size-12 place-items-center rounded-lg border bg-card">
-                <img src="/images/camel-logo.png" alt="Camel Radar logo" className="size-10 object-contain" />
-              </span>
+              <img src="/images/camel-logo.png" alt="Camel Radar logo" className="h-[4.75rem] w-[4.75rem] shrink-0 object-contain" />
               <div>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>

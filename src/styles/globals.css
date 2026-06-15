@@ -1,89 +1,58 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/outfit";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   font-family:
-    Geist,
+    "Outfit Variable",
     "Segoe UI",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  color: #18201c;
-  background: #f4f6f2;
-  --camel-brand: 173 43% 34%;
+  color: #f8f4ea;
+  background: #0c100d;
+  --camel-brown: #b15b28;
+  --camel-gold: #edb646;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --background:
-    oklch(0.979 0.009 150);
-  --foreground:
-    oklch(0.18 0.014 150);
-  --card:
-    oklch(1 0 0);
-  --card-foreground:
-    oklch(0.18 0.014 150);
-  --popover:
-    oklch(1 0 0);
-  --popover-foreground:
-    oklch(0.18 0.014 150);
-  --primary:
-    oklch(0.47 0.082 184);
-  --primary-foreground:
-    oklch(0.985 0.004 150);
-  --secondary:
-    oklch(0.935 0.015 150);
-  --secondary-foreground:
-    oklch(0.22 0.018 150);
-  --muted:
-    oklch(0.94 0.012 150);
-  --muted-foreground:
-    oklch(0.48 0.018 150);
-  --accent:
-    oklch(0.92 0.028 82);
-  --accent-foreground:
-    oklch(0.25 0.024 82);
-  --destructive:
-    oklch(0.577 0.245 27.325);
-  --border:
-    oklch(0.88 0.014 150);
-  --input:
-    oklch(0.88 0.014 150);
-  --ring:
-    oklch(0.58 0.08 184);
-  --chart-1:
-    oklch(0.55 0.095 184);
-  --chart-2:
-    oklch(0.62 0.105 82);
-  --chart-3:
-    oklch(0.48 0.045 255);
-  --chart-4:
-    oklch(0.62 0.055 150);
-  --chart-5:
-    oklch(0.42 0.052 30);
-  --radius:
-    0.5rem;
-  --sidebar:
-    oklch(0.965 0.01 150);
-  --sidebar-foreground:
-    oklch(0.18 0.014 150);
-  --sidebar-primary:
-    oklch(0.47 0.082 184);
-  --sidebar-primary-foreground:
-    oklch(0.985 0.004 150);
-  --sidebar-accent:
-    oklch(0.93 0.014 150);
-  --sidebar-accent-foreground:
-    oklch(0.22 0.018 150);
-  --sidebar-border:
-    oklch(0.88 0.014 150);
-  --sidebar-ring:
-    oklch(0.58 0.08 184);
+  --background: #0c100d;
+  --foreground: #f8f4ea;
+  --card: #121811;
+  --card-foreground: #f8f4ea;
+  --popover: #151b14;
+  --popover-foreground: #f8f4ea;
+  --primary: #edb646;
+  --primary-foreground: #16100a;
+  --secondary: #1a2218;
+  --secondary-foreground: #f7ead0;
+  --muted: #192017;
+  --muted-foreground: #b7ad9a;
+  --accent: #b15b28;
+  --accent-foreground: #fff5df;
+  --destructive: #e46666;
+  --border: color-mix(in oklab, #f8f4ea 12%, transparent);
+  --input: color-mix(in oklab, #f8f4ea 15%, transparent);
+  --ring: #edb646;
+  --chart-1: #edb646;
+  --chart-2: #b15b28;
+  --chart-3: #d7c59b;
+  --chart-4: #6e8a73;
+  --chart-5: #8a6e52;
+  --radius: 0.46rem;
+  --sidebar: #0f150f;
+  --sidebar-foreground: #f8f4ea;
+  --sidebar-primary: #edb646;
+  --sidebar-primary-foreground: #16100a;
+  --sidebar-accent: #1a2218;
+  --sidebar-accent-foreground: #f7ead0;
+  --sidebar-border: color-mix(in oklab, #f8f4ea 13%, transparent);
+  --sidebar-ring: #edb646;
 }
 
 body {
@@ -91,13 +60,17 @@ body {
   min-height: 100dvh;
   margin: 0;
   letter-spacing: 0;
+  font-weight: 450;
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in oklab, var(--camel-brown) 18%, transparent), transparent 32rem),
+    linear-gradient(145deg, #0f150f 0%, #090d0a 56%, #11100b 100%);
 }
 
 @theme inline {
   --font-heading:
     var(--font-sans);
   --font-sans:
-    'Geist Variable', sans-serif;
+    'Outfit Variable', sans-serif;
   --color-sidebar-ring:
     var(--sidebar-ring);
   --color-sidebar-border:
@@ -177,68 +150,32 @@ body {
 }
 
 .dark {
-  --background:
-    oklch(0.15 0.012 150);
-  --foreground:
-    oklch(0.965 0.006 150);
-  --card:
-    oklch(0.205 0.014 150);
-  --card-foreground:
-    oklch(0.965 0.006 150);
-  --popover:
-    oklch(0.205 0.014 150);
-  --popover-foreground:
-    oklch(0.965 0.006 150);
-  --primary:
-    oklch(0.72 0.082 184);
-  --primary-foreground:
-    oklch(0.13 0.014 150);
-  --secondary:
-    oklch(0.26 0.016 150);
-  --secondary-foreground:
-    oklch(0.965 0.006 150);
-  --muted:
-    oklch(0.26 0.016 150);
-  --muted-foreground:
-    oklch(0.72 0.018 150);
-  --accent:
-    oklch(0.31 0.035 82);
-  --accent-foreground:
-    oklch(0.965 0.006 150);
-  --destructive:
-    oklch(0.704 0.191 22.216);
-  --border:
-    oklch(1 0 0 / 11%);
-  --input:
-    oklch(1 0 0 / 15%);
-  --ring:
-    oklch(0.72 0.082 184);
-  --chart-1:
-    oklch(0.87 0 0);
-  --chart-2:
-    oklch(0.556 0 0);
-  --chart-3:
-    oklch(0.439 0 0);
-  --chart-4:
-    oklch(0.371 0 0);
-  --chart-5:
-    oklch(0.269 0 0);
-  --sidebar:
-    oklch(0.18 0.014 150);
-  --sidebar-foreground:
-    oklch(0.965 0.006 150);
-  --sidebar-primary:
-    oklch(0.72 0.082 184);
-  --sidebar-primary-foreground:
-    oklch(0.13 0.014 150);
-  --sidebar-accent:
-    oklch(0.25 0.016 150);
-  --sidebar-accent-foreground:
-    oklch(0.965 0.006 150);
-  --sidebar-border:
-    oklch(1 0 0 / 10%);
-  --sidebar-ring:
-    oklch(0.556 0 0);
+  --background: #0c100d;
+  --foreground: #f8f4ea;
+  --card: #121811;
+  --card-foreground: #f8f4ea;
+  --popover: #151b14;
+  --popover-foreground: #f8f4ea;
+  --primary: #edb646;
+  --primary-foreground: #16100a;
+  --secondary: #1a2218;
+  --secondary-foreground: #f7ead0;
+  --muted: #192017;
+  --muted-foreground: #b7ad9a;
+  --accent: #b15b28;
+  --accent-foreground: #fff5df;
+  --destructive: #e46666;
+  --border: color-mix(in oklab, #f8f4ea 12%, transparent);
+  --input: color-mix(in oklab, #f8f4ea 15%, transparent);
+  --ring: #edb646;
+  --sidebar: #0f150f;
+  --sidebar-foreground: #f8f4ea;
+  --sidebar-primary: #edb646;
+  --sidebar-primary-foreground: #16100a;
+  --sidebar-accent: #1a2218;
+  --sidebar-accent-foreground: #f7ead0;
+  --sidebar-border: color-mix(in oklab, #f8f4ea 13%, transparent);
+  --sidebar-ring: #edb646;
 }
 
 @layer base {
@@ -247,6 +184,12 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    font-weight: 760;
+    letter-spacing: 0;
   }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
