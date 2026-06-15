@@ -352,9 +352,13 @@ export class Settings
         }
     }
 
-    returnLocalBool(item)
+    returnLocalBool(item, defaultValue = false)
     {
-        return localStorage.getItem(item) == "true";
+        const value = localStorage.getItem(item);
+        if (value === null)
+            return defaultValue;
+
+        return value == "true";
     }
 
     update()
@@ -362,7 +366,7 @@ export class Settings
         this.showMapBackground = this.returnLocalBool("settingShowMap");
 
         //#region Players
-        this.settingDot = this.returnLocalBool("settingDot");
+        this.settingDot = this.returnLocalBool("settingDot", true);
         this.settingNickname = this.returnLocalBool("settingNickname");
         this.settingHealth = this.returnLocalBool("settingHealth");
         this.settingMounted = this.returnLocalBool("settingMounted");
@@ -373,9 +377,9 @@ export class Settings
         this.settingSound = this.returnLocalBool("settingSound");
         this.settingFlash = this.returnLocalBool("settingFlash");
 
-        this.settingPassivePlayers = this.returnLocalBool("settingPassivePlayers");
-        this.settingFactionPlayers = this.returnLocalBool("settingFactionPlayers");
-        this.settingDangerousPlayers = this.returnLocalBool("settingDangerousPlayers");
+        this.settingPassivePlayers = this.returnLocalBool("settingPassivePlayers", true);
+        this.settingFactionPlayers = this.returnLocalBool("settingFactionPlayers", true);
+        this.settingDangerousPlayers = this.returnLocalBool("settingDangerousPlayers", true);
         //#endregion
 
         //#region Resources

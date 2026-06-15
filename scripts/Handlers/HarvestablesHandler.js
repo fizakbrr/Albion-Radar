@@ -29,6 +29,17 @@ class Harvestable
     }
 }
 
+function toArray(value)
+{
+    if (Array.isArray(value))
+        return value;
+
+    if (value && Array.isArray(value.data))
+        return value.data;
+
+    return [];
+}
+
 class HarvestablesHandler
 {
     constructor(settings)
@@ -150,14 +161,15 @@ class HarvestablesHandler
     // Good
     newHarvestableObject(id, Parameters) // Update
     {
-        console.log(Parameters);
-
         const type = Parameters[5];
         const tier = Parameters[7];
         const location = Parameters[8];
 
         let enchant = Parameters[11] === undefined ? 0 : Parameters[11];
         let size = Parameters[10] === undefined ? 0 : Parameters[10];
+
+        if (!Array.isArray(location) || location.length < 2)
+            return;
 
         this.UpdateHarvestable(id, type, tier, location[0], location[1], enchant, size);
     }
@@ -179,19 +191,15 @@ class HarvestablesHandler
     // Good
     newSimpleHarvestableObject(Parameters) // New
     {
-        let a0 = Parameters[0]["data"];
-        if  (a0 == undefined)
-        {
-            a0 = Parameters[0];
-        }
+        const a0 = toArray(Parameters[0]);
 
         if (a0.length === 0) return;
 
-        const a1 = Parameters[1]["data"];
-        const a2 = Parameters[2]["data"];
+        const a1 = toArray(Parameters[1]);
+        const a2 = toArray(Parameters[2]);
  
-        const a3 = Parameters[3];
-        const a4 = Parameters[4]["data"];
+        const a3 = toArray(Parameters[3]);
+        const a4 = toArray(Parameters[4]);
 
         for (let i = 0; i < a0.length; i++) {
             const id = a0[i];

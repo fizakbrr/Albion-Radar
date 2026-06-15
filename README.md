@@ -1,111 +1,146 @@
-[![Discord](https://img.shields.io/discord/1191823969167352039?style=for-the-badge&logo=discord&label=Discord)](https://discord.gg/XAWjmzeaD3)
-[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Zeldruck/Albion-Online-ZQRadar/main?style=for-the-badge&label=Last%20Commit)]()
-[![GitHub issues](https://img.shields.io/github/issues-raw/Zeldruck/Albion-Online-ZQRadar?style=for-the-badge&label=Issue)](https://github.com/Zeldruck/Albion-Online-ZQRadar/issues)
-[![GitHub Repo stars](https://img.shields.io/github/stars/Zeldruck/Albion-Online-ZQRadar?style=for-the-badge)]()
+# Camel Radar
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F1VMA9G)
+Camel Radar is a local Albion Online radar interface with an Express/WebSocket backend and a React, Tailwind, and shadcn UI frontend. It can run as a no-capture local UI or, when the optional native capture dependency is available, listen to Albion Online UDP traffic through Npcap.
 
-## ❓ What is ZQRadar?
+## Requirements
 
-ZQRadar is a radar type tool for the game Albion Online.
-\
-Albion ZQRadar provides a real-time map, helping players detect other players, creatures, resources and more, nearby.
+- Windows 10/11
+- Node.js `20.20.2` or newer
+- npm `10.8.0` or newer
+- For live packet capture only:
+  - Npcap installed
+  - Visual Studio C++ build tools
+  - Administrator terminal
+  - Albion Online traffic on UDP port `5056`
 
-## 🎯 Features
+The React UI and automated tests can run without packet capture.
 
-- No injections, less risk of banning
-- Display a lot of information about other players (health, items, mounted or not, ...)
-- Display customizable resources (select tiers and enchantments for each)
-- Display customizable living resources (select tiers and enchantments for each)
-- Display customizable enemies
-- Display mist beasts
-- Display chests (types)
-- Display mist portals (solo/duo, enchantments)
-- Display dungeons (solo/duo, enchantments)
-- Display background map on radar
+## Install
 
-And much more to come!
-\
-Join the [Discord](https://discord.gg/XAWjmzeaD3) to look at the to-do list and be informed when a new version is released.
-
-## 🔰 How to run (Windows)
-
-1. Download Npcap:
-- [Npcap 1.79](https://npcap.com/dist/npcap-1.79.exe)
-2. Download the the latest release
-- [Releases](https://github.com/Zeldruck/Albion-Online-ZQRadar/releases)
-3. Open the radar and wait for the line:
+```powershell
+git clone https://github.com/fizakbrr/CamelRadar.git
+cd CamelRadar
+npm ci
 ```
-Please select one of the adapter that you use to connect to the internet:
-  1. ******
-  2. ******
-  3. ******
 
-input the number here:
-```
-4. Choose the right adapter and enter the number (do not choose 127.0.0.1). 
-5. Authenticate yourself with discord.
-6. Click on the "Launch radar" button.
-7. You can now access the radar features by going to `http://localhost:5001` in your browser.
+The native `cap` package is optional. If it cannot build on your machine, the app can still run in no-capture mode.
 
-## 👨‍💻 For the devs (Windows)
+## Run
 
-1. Download Node.js v18.18.2:
-- [Node.js v18.18.2 (64-bit)](https://nodejs.org/dist/v18.18.2/node-v18.18.2-x64.msi)
-2. Download Npcap:
-- [Npcap 1.79](https://npcap.com/dist/npcap-1.79.exe)
-3. Download Python 3.10.2:
-- [Python 3.10.2 (64-bit)](https://www.python.org/ftp/python/3.10.2/python-3.10.2-amd64.exe)
-4. Download Windows Build Tools:
-- [Windows Build Tools](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools)
-- And select `Desktop development with C++` (the first one normally), and install
-5. Download the source code of the latest dev branch
-- [Branch](https://github.com/Zeldruck/Albion-Online-ZQRadar/tree/old-radar-dev)
-6. Run the following line:
-```
-npm install
-```
-7. Run the following line:
-```
-node app.js
-```
-8. You should see this:
-```
-Please select one of the adapter that you use to connect to the internet:
-  1. ******
-  2. ******
-  3. ******
+Run the UI without packet capture:
 
-input the number here:
+```powershell
+npm run start:no-capture
 ```
-9. Choose the right adapter and enter the number. 
-10. You can now access the radar features by going to `http://localhost:5001` in your browser.
 
-## ✨ Image Packs
-**⚠️(This is not mandatory for the radar to work)⚠️**
-\
-You can download the Image Packs to enhance the radar.
-\
-\
-**Packs:**
-- **Ressource Pack v1.0**: Installed by default
-- **Items Pack v1.2**: [Link](https://github.com/Zeldruck/Albion-Online-ZQRadar/releases/tag/item-pack-v1.1)
-- **~~Animals & Harvestables Pack v0.0~~**: [Link](https://github.com/Zeldruck/Albion-Online-ZQRadar/releases/)
-- **~~Enemies Pack v0.0~~**: [Link](https://github.com/Zeldruck/Albion-Online-ZQRadar/releases/)
-- **Maps Pack v0.1**: [Link](https://github.com/Zeldruck/Albion-Online-ZQRadar/releases/tag/map-pack-v0.1)
+Open:
 
-\
-Once downloaded, exitract the folder into `Albion-Online-ZQRadar/images/`.
-\
-\
+```text
+http://localhost:5001
+```
+
+Run with live packet capture:
+
+```powershell
+npm start
+```
+
+On first live-capture run, choose the network adapter used by Albion Online. The selected adapter IP is saved to `ip.txt`, which is ignored by git.
+
+You can also pass the adapter directly:
+
+```powershell
+$env:CAMEL_RADAR_ADAPTER_IP = "192.168.1.25"
+npm start
+```
+
+## Development
+
+Build the React frontend:
+
+```powershell
+npm run build
+```
+
+Run only the Express backend after a build:
+
+```powershell
+npm run serve
+```
+
+Run the Vite frontend server for frontend iteration:
+
+```powershell
+npm run dev
+```
+
+## Configuration
+
+Environment variables:
+
+- `PORT`: HTTP UI port, default `5001`
+- `WS_PORT`: WebSocket port, default `5002`
+- `WS_HOST`: WebSocket host, default `localhost`
+- `CAMEL_RADAR_CAPTURE`: `1` to attempt packet capture, `0` to disable it
+- `CAMEL_RADAR_ADAPTER_IP`: IPv4 address of the capture adapter
+- `CAMEL_RADAR_OPEN_BROWSER`: `1` to open the browser after start, `0` to skip it
+
 Example:
-\
-If you have downloaded the Map Pack, you should have `Albion-Online-ZQRadar/images/Maps/*.png`.
 
+```powershell
+$env:PORT = "5101"
+$env:WS_PORT = "5102"
+$env:CAMEL_RADAR_CAPTURE = "0"
+npm run serve
+```
+
+## Test
+
+```powershell
+npm test
+```
+
+The test command builds the React frontend, starts the server with capture disabled, verifies key UI/static/config routes, checks WebSocket payload shape, and exercises parser fixture buffers.
+
+## Frontend
+
+- React + Vite owns all visible UI routes.
+- Tailwind CSS v4 provides styling.
+- shadcn components are used for app controls, cards, forms, tables, dialogs, sheets, tabs, alerts, badges, switches, checkboxes, inputs, selects, tooltips, and scroll areas.
+- The Camel logo is served from `images/camel-logo.png`.
+
+## Troubleshooting
+
+### UI starts but live data is empty
+
+Confirm:
+
+- Albion Online is running and connected to the world.
+- The adapter IP in `ip.txt` matches the network adapter carrying Albion traffic.
+- `CAMEL_RADAR_CAPTURE` is not set to `0`.
+- No old Node process is occupying `5001` or `5002`.
+- Npcap and the native `cap` package are installed correctly.
+
+### Packet capture is unavailable
+
+Use no-capture mode while you fix native dependencies:
+
+```powershell
+npm run start:no-capture
+```
+
+Then verify the native capture module:
+
+```powershell
+node -e "const { Cap } = require('cap'); console.log(Cap.deviceList())"
+```
+
+### Radar page opens but shows no player dots
+
+Current Albion traffic can omit or encrypt exact live player coordinates. Camel Radar can still alert/list detected players when identity packets arrive, but it cannot honestly draw exact dots without usable position data.
 
 ## Credits
-[@Zeldruck](https://github.com/Zeldruck)
-\
-Based on [QRadar](https://github.com/FashionFlora/Albion-Online-Radar-QRadar) by [@FashionFlora](https://github.com/FashionFlora?)
-\
-Use of [photon-packet-parser](https://github.com/0xN0x/photon-packet-parser) to parse packets.
+
+Camel Radar is maintained by me.
+
+Original project work by Zeldruck. Additional upstream radar work by FashionFlora, legacy packet parsing work from `photon-packet-parser`, and Protocol 18 behavior cross-checked against AutoDruid's photon parser.

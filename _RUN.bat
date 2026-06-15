@@ -1,10 +1,10 @@
 @echo off
-echo Running the radar
+echo Running Camel Radar
 echo.
-echo node app.js
+echo npm start
 
 cd %~dp0
 
-call node app.js
+call npm start
 
 pause

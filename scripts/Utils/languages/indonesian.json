@@ -107,8 +107,8 @@
         "require": "Memerlukan Paket Peta Sumber Daya",
         "download": "- Unduh ",
         "map-pack": "paket peta",
-        "extract": "- Ekstrak folder <span class=\"text-white\">Peta</span> ke > <span class=\"text-gray-200\"><i>./ZQRADAR/images/</i></span>",
-        "path": "- Anda harus memiliki jalur saat ini > <span class=\"text-gray-200\"><i>./ZQRADAR/images/Maps/**.png</i></span>",
+        "extract": "- Ekstrak folder <span class=\"text-white\">Peta</span> ke > <span class=\"text-gray-200\"><i>./CamelRadar/images/</i></span>",
+        "path": "- Anda harus memiliki jalur saat ini > <span class=\"text-gray-200\"><i>./CamelRadar/images/Maps/**.png</i></span>",
         "refresh": "- <span class=\"text-white font-semibold\">Segarkan </span>halaman ini",
         "download2": "Unduh"
     }

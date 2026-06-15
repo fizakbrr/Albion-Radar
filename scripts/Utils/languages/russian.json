@@ -107,8 +107,8 @@
         "require": "Требуется пакет карт ресурсов",
         "download": "- Скачайте ",
         "map-pack": "пакет карт",
-        "extract": "- Извлеките папку <span class=\"text-white\">Maps</span> в > <span class=\"text-gray-200\"><i>./ZQRADAR/images/</i></span>",
-        "path": "- Теперь у вас должен быть текущий путь > <span class=\"text-gray-200\"><i>./ZQRADAR/images/Maps/**.png</i></span>",
+        "extract": "- Извлеките папку <span class=\"text-white\">Maps</span> в > <span class=\"text-gray-200\"><i>./CamelRadar/images/</i></span>",
+        "path": "- Теперь у вас должен быть текущий путь > <span class=\"text-gray-200\"><i>./CamelRadar/images/Maps/**.png</i></span>",
         "refresh": "- <span class=\"text-white font-semibold\">Обновите </span>эту страницу",
         "download2": "Скачать"
     }

@@ -107,8 +107,8 @@
         "require": "Require Ressource Map Pack",
         "download": "- Download the ",
         "map-pack": "map pack",
-        "extract": "- Extract the <span class=\"text-white\">Maps</span> folder into > <span class=\"text-gray-200\"><i>./ZQRADAR/images/</i></span>",
-        "path": "- You should now have the current path > <span class=\"text-gray-200\"><i>./ZQRADAR/images/Maps/**.png</i></span>",
+        "extract": "- Extract the <span class=\"text-white\">Maps</span> folder into > <span class=\"text-gray-200\"><i>./CamelRadar/images/</i></span>",
+        "path": "- You should now have the current path > <span class=\"text-gray-200\"><i>./CamelRadar/images/Maps/**.png</i></span>",
         "refresh": "- <span class=\"text-white font-semibold\">Refresh </span>this page",
         "download2": "Download"
     }

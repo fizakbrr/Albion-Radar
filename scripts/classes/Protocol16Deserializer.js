@@ -130,14 +130,14 @@ class Protocol16Deserializer {
 
 	static deserializeObjectArray(input) {
 		const tableSize = this.deserializeShort(input);
-		let ouput = [];
+		let output = [];
 
 		for (let i = 0; i < tableSize; i++) {
 			const typeCode = this.deserializeByte(input);
-			ouput[i] = deserialize(input, typeCode);
+			output[i] = this.deserialize(input, typeCode);
 		}
 
-		return ouput;
+		return output;
 	}
 
 	static deserializeHashtable(input) {
@@ -203,15 +203,13 @@ class Protocol16Deserializer {
 	}
 
 	static deserializeParameterTable(input) {
-		const tableSize = input.readUInt16BE(1);
+		const tableSize = this.deserializeShort(input);
 		let table = {};
-		let offset = 3;
 
 		for (let i = 0; i < tableSize; i++) {
-			const key = input.readUInt8(offset);
-			const valueTypeCode = input.readUInt8(offset + 1);
-
-			const value = this.deserialize(input, valueTypeCode)
+			const key = this.deserializeByte(input);
+			const valueTypeCode = this.deserializeByte(input);
+			const value = this.deserialize(input, valueTypeCode);
 
 			table[key] = value;
 		}

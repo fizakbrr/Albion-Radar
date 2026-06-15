@@ -1,231 +1,442 @@
-﻿const express = require('express');
-const PhotonParser = require('./scripts/classes/PhotonPacketParser');
-var Cap = require('cap').Cap;
-var decoders = require('cap').decoders;
+const childProcess = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const express = require('express');
 const WebSocket = require('ws');
 
-const fs = require("fs");
+const PhotonParser = require('./scripts/classes/PhotonPacketParser');
+const EventCodes = require('./scripts/Utils/EventCodesApp.js');
 
-const { getAdapterIp } = require('./server-scripts/adapter-selector');
+const DEFAULT_HTTP_PORT = 5001;
+const DEFAULT_WS_PORT = 5002;
+const DEFAULT_WS_HOST = 'localhost';
+const CAPTURE_FILTER = 'udp and (dst port 5056 or src port 5056)';
+const BRAND_NAME = 'Camel Radar';
 
-const EventCodes = require('./scripts/Utils/EventCodesApp.js')
+function readOptionOrEnv(optionValue, primaryEnv, legacyEnv) {
+  if (optionValue !== undefined && optionValue !== null) return optionValue;
+  if (process.env[primaryEnv] !== undefined) return process.env[primaryEnv];
+  return legacyEnv ? process.env[legacyEnv] : undefined;
+}
 
-StartRadar();
+function ensureBigIntJSON() {
+  if (!BigInt.prototype.toJSON) {
+    BigInt.prototype.toJSON = function toJSON() {
+      return this.toString();
+    };
+  }
+}
 
-function StartRadar()
-{
+function parseBoolean(value, defaultValue) {
+  if (value === undefined || value === null || value === '') return defaultValue;
+  if (typeof value === 'boolean') return value;
+
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'y', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'n', 'off'].includes(normalized)) return false;
+  return defaultValue;
+}
+
+function normalizePort(value, defaultPort) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 65535 ? parsed : defaultPort;
+}
+
+function createApp(options = {}) {
+  const rootDir = options.rootDir || __dirname;
+  const getWsPort = options.getWsPort || (() => options.wsPort || DEFAULT_WS_PORT);
+  const wsHost = options.wsHost || DEFAULT_WS_HOST;
+  const frontendDist = path.join(rootDir, 'dist');
+  const frontendIndex = path.join(frontendDist, 'index.html');
+  const hasFrontendBuild = fs.existsSync(frontendIndex);
   const app = express();
 
-  BigInt.prototype.toJSON = function() { return this.toString() }
+  const sendClientConfig = (req, res) => {
+    const config = {
+      brandName: BRAND_NAME,
+      wsHost,
+      wsPort: getWsPort(),
+    };
 
-  app.use(express.static(__dirname + '/views'));
-  app.set('view engine', 'ejs');
+    res
+      .type('application/javascript')
+      .send([
+        `window.CAMEL_RADAR_CONFIG = ${JSON.stringify(config)};`,
+        '',
+      ].join('\n'));
+  };
 
-
-  app.get('/', (req, res) => {
-    const viewName = 'main/home'; 
-    res.render('layout', { mainContent: viewName});
+  app.get('/camel-radar-config.js', sendClientConfig);
+  app.get('/favicon.ico', (req, res) => {
+    res.type('image/png').sendFile(path.join(rootDir, 'images', 'camel-logo.png'));
   });
 
-  app.get('/home', (req, res) => {
-    const viewName = 'main/home'; 
-    res.render('./layout', { mainContent: viewName});
-  });
+  app.use('/scripts', express.static(path.join(rootDir, 'scripts')));
+  app.use('/images', express.static(path.join(rootDir, 'images')));
+  app.use('/images/Resources', express.static(path.join(rootDir, 'images', 'Resources')));
+  app.use('/images/Maps', express.static(path.join(rootDir, 'images', 'Maps')));
+  app.use('/images/Items', express.static(path.join(rootDir, 'images', 'Items')));
+  app.use('/images/Flags', express.static(path.join(rootDir, 'images', 'Flags')));
+  app.use('/sounds', express.static(path.join(rootDir, 'sounds')));
+  app.use('/config', express.static(path.join(rootDir, 'config')));
 
-  app.get('/resources', (req, res) => {
-    const viewName = 'main/resources'; 
-    res.render('layout', { mainContent: viewName });
-  });
-
-  app.get('/enemies', (req, res) => {
-    const viewName = 'main/enemies'; 
-    res.render('layout', { mainContent: viewName });
-  });
-
-  app.get('/chests', (req, res) => {
-    const viewName = 'main/chests'; 
-    res.render('layout', { mainContent: viewName });
-  });
-
-  app.get('/map', (req, res) => {
-    const viewName = 'main/map';
-    const viewRequireName = 'main/require-map'
-
-    fs.access("./images/Maps", function(error) {
-      if (error)
-      {
-        res.render('layout', { mainContent: viewRequireName });
-      }
-      else
-      {
-        res.render('layout', { mainContent: viewName });
-      }
-    });
-  });
-
-  app.get('/ignorelist', (req, res) => {
-    const viewName = 'main/ignorelist'; 
-    res.render('layout', { mainContent: viewName });
-  });
-
-  app.get('/settings', (req, res) => {
-    const viewName = 'main/settings'; 
-    res.render('layout', { mainContent: viewName });
-  });
-
-
-
-  app.get('/drawing', (req, res) => {
-
-    res.render('main/drawing');
-  });
-
-  app.get('/items', (req, res) => {
-
-    res.render('main/drawing-items');
-  });
-
-  /*app.get('/logout', (req, res) => {
-
-    req.session.destroy();
-    res.redirect('/');
-  });*/
-
-
-
-  app.use('/scripts', express.static(__dirname + '/scripts'));
-  app.use('/scripts/Handlers', express.static(__dirname + '/scripts/Handlers'));
-  app.use('/scripts/Drawings', express.static(__dirname + '/scripts/Drawings'));
-  app.use('/scripts/Utils', express.static(__dirname + '/scripts/Utils'));
-  app.use('/scripts/Utils/languages', express.static(__dirname + '/scripts/Utils/languages'));
-  app.use('/images/Resources', express.static(__dirname + '/images/Resources'));
-  app.use('/images/Maps', express.static(__dirname + '/images/Maps'));
-  app.use('/images/Items', express.static(__dirname + '/images/Items'));
-  app.use('/images/Flags', express.static(__dirname + '/images/Flags'));
-  app.use('/sounds', express.static(__dirname + '/sounds'));
-  app.use('/config', express.static(__dirname + '/config'));
-
-
-
-  const port = 5001;
-
-
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-    //open(`http://localhost:${port}`);
-    require('child_process').exec(`start http://localhost:${port}`);
-  });
-
-
-  var c = new Cap();
-
-  let adapterIp;
-
-  if (fs.existsSync('ip.txt'))
-    adapterIp = fs.readFileSync('ip.txt', { encoding: 'utf-8', flag: 'r' })
-    
-
-  if (!adapterIp)
-  {
-    adapterIp = getAdapterIp()
-  }
-  else
-  {
-    console.log();
-    console.log(`Using last adapter selected - ${adapterIp}`);
-    console.log('If you want to change adapter, delete the  "ip.txt"  file.');
-    console.log();
+  if (hasFrontendBuild) {
+    app.use(express.static(frontendDist, { index: false }));
   }
 
-  let device = Cap.findDevice(adapterIp);
-
-  if (device == undefined)
-  {
-    console.log();
-    console.log(`Last adapter is not working, please choose a new one.`);
-    console.log();
-
-    adapterIp = getAdapterIp();
-    device = Cap.findDevice(adapterIp);
-  }
-
-  const filter = 'udp and (dst port 5056 or src port 5056)';
-  var bufSize =  4096;
-  var buffer = Buffer.alloc(4096);
-  const manager = new PhotonParser();
-  var linkType = c.open(device, filter, bufSize, buffer);
-
-  c.setMinBytes && c.setMinBytes(0);
-
-
-  async function handlePayloadAsync(payload) {
-    try {
-      manager.handle(payload);
-    } catch (error) {
-      console.error('Error processing the payload:', error);
+  const sendFrontend = (res, statusCode = 200) => {
+    if (!hasFrontendBuild) {
+      res
+        .status(503)
+        .type('text/plain')
+        .send('Camel Radar frontend is not built. Run `npm run build` before starting the server.');
+      return;
     }
-  }
 
-  // setup Cap event listener on global level
-  c.on('packet', function (nbytes, trunc) {
-    const ret = decoders.Ethernet(buffer);
-    const ipRet = decoders.IPV4(buffer, ret.offset);
-    const udpRet = decoders.UDP(buffer, ipRet.offset);
-  
-    // Slice the buffer to get the actual payload from the offset where the UDP packet data starts
-    const payload = buffer.slice(udpRet.offset, nbytes);
-  
-    // Call the asynchronous handler
-    handlePayloadAsync(payload);
+    res.status(statusCode).sendFile(frontendIndex);
+  };
+
+  const frontendRoutes = [
+    '/',
+    '/home',
+    '/resources',
+    '/enemies',
+    '/chests',
+    '/ignorelist',
+    '/settings',
+    '/map',
+    '/drawing',
+    '/items',
+  ];
+
+  app.get(frontendRoutes, (req, res) => {
+    sendFrontend(res);
   });
 
-  const server = new WebSocket.Server({ port: 5002, host: 'localhost'});
-  server.on('listening', () => {
-    manager.on('event', (dictonary) =>
-    {
-      const eventCode = dictonary["parameters"][252];
+  app.use((req, res) => {
+    const isStaticRequest = ['/scripts', '/images', '/sounds', '/config', '/assets'].some((prefix) => req.path.startsWith(prefix));
+    if (isStaticRequest || !req.accepts('html')) {
+      res.status(404).type('text/plain').send('Not found');
+      return;
+    }
 
-      switch (eventCode) {
-        case EventCodes.EventCodes.NewCharacter:
-        case EventCodes.EventCodes.Leave:
-        case EventCodes.EventCodes.CharacterEquipmentChanged:
-          server.clients.forEach(function(client) {
-            client.send(JSON.stringify({ code : "items", dictionary: JSON.stringify(dictonary) }));
-          });
-      
-        default:
-          server.clients.forEach(function(client) {
-            client.send(JSON.stringify({ code : "event", dictionary: JSON.stringify(dictonary) }));
-          });
-          break;
+    sendFrontend(res, 404);
+  });
+
+  app.use((error, req, res, next) => {
+    console.error('[http] Request failed:', error);
+
+    if (res.headersSent) {
+      next(error);
+      return;
+    }
+
+    if (req.accepts('html')) {
+      sendFrontend(res, 500);
+      return;
+    }
+
+    res.status(500).json({
+      error: error && error.message ? error.message : 'Unexpected server error',
+    });
+  });
+
+  return app;
+}
+
+function sendToClients(server, payload) {
+  const message = JSON.stringify(payload);
+
+  server.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
+}
+
+function createWebSocketServer(manager, options = {}) {
+  const wsHost = options.wsHost || DEFAULT_WS_HOST;
+  const wsPort = normalizePort(options.wsPort, DEFAULT_WS_PORT);
+  const server = new WebSocket.Server({ port: wsPort, host: wsHost });
+
+  server.on('listening', () => {
+    manager.on('event', (dictionary) => {
+      const eventCode = dictionary && dictionary.parameters ? dictionary.parameters[252] : undefined;
+
+      if (
+        eventCode === EventCodes.EventCodes.NewCharacter ||
+        eventCode === EventCodes.EventCodes.Leave ||
+        eventCode === EventCodes.EventCodes.CharacterEquipmentChanged
+      ) {
+        sendToClients(server, { code: 'items', dictionary: JSON.stringify(dictionary) });
       }
 
-      /*const dictionaryDataJSON = JSON.stringify(dictonary);
-      server.clients.forEach(function(client) {
-        client.send(JSON.stringify({ code : "event", dictionary: dictionaryDataJSON }))
-      });*/
+      sendToClients(server, { code: 'event', dictionary: JSON.stringify(dictionary) });
     });
 
-    
-    manager.on('request', (dictonary) =>
-    {
-      const dictionaryDataJSON = JSON.stringify(dictonary);
-      server.clients.forEach(function(client) {
-        client.send(JSON.stringify({ code : "request", dictionary: dictionaryDataJSON }))
-      });
+    manager.on('request', (dictionary) => {
+      sendToClients(server, { code: 'request', dictionary: JSON.stringify(dictionary) });
     });
 
-    manager.on('response', (dictonary) =>
-    {
-      const dictionaryDataJSON = JSON.stringify(dictonary);
-      server.clients.forEach(function(client) {
-        client.send(JSON.stringify({ code : "response", dictionary: dictionaryDataJSON }))
-      });
+    manager.on('response', (dictionary) => {
+      sendToClients(server, { code: 'response', dictionary: JSON.stringify(dictionary) });
     });
   });
 
   server.on('close', () => {
-    console.log('closed')
-    manager.removeAllListeners()
-  })
+    manager.removeAllListeners();
+  });
+
+  return server;
 }
+
+function readCachedAdapterIp(rootDir) {
+  const ipFile = path.join(rootDir, 'ip.txt');
+  if (!fs.existsSync(ipFile)) return undefined;
+
+  const adapterIp = fs.readFileSync(ipFile, { encoding: 'utf-8', flag: 'r' }).trim();
+  return adapterIp || undefined;
+}
+
+function selectAdapterIp(rootDir, providedIp, options = {}) {
+  if (providedIp) return providedIp;
+
+  const cachedIp = options.ignoreCache ? undefined : readCachedAdapterIp(rootDir);
+  if (cachedIp) {
+    console.log();
+    console.log(`Using last adapter selected - ${cachedIp}`);
+    console.log('If you want to change adapter, delete the "ip.txt" file.');
+    console.log();
+    return cachedIp;
+  }
+
+  const { getAdapterIp } = require('./server-scripts/adapter-selector');
+  return getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
+}
+
+function startPacketCapture(manager, options = {}) {
+  const rootDir = options.rootDir || __dirname;
+  const adapterIpFromEnv = readOptionOrEnv(
+    options.adapterIp,
+    'CAMEL_RADAR_ADAPTER_IP',
+  );
+  const allowAdapterPrompt = options.allowAdapterPrompt !== false && process.stdin.isTTY;
+  let capModule;
+
+  try {
+    capModule = require('cap');
+  } catch (error) {
+    console.warn('[capture] Packet capture is unavailable because optional dependency "cap" is not installed or failed to load.');
+    console.warn('[capture] Run `npm start` again after installing Npcap and Windows C++ build tools, or use `npm run start:no-capture`.');
+    return { enabled: false, reason: 'cap-unavailable', error };
+  }
+
+  const { Cap, decoders } = capModule;
+  const cap = new Cap();
+  let adapterIp = adapterIpFromEnv;
+
+  if (!adapterIp) {
+    adapterIp = readCachedAdapterIp(rootDir);
+  }
+
+  if (!adapterIp && allowAdapterPrompt) {
+    const { getAdapterIp } = require('./server-scripts/adapter-selector');
+    adapterIp = getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
+  }
+
+  if (!adapterIp) {
+    console.warn('[capture] No adapter IP was provided. Set CAMEL_RADAR_ADAPTER_IP or run interactively once to choose an adapter.');
+    return { enabled: false, reason: 'adapter-missing' };
+  }
+
+  let device = Cap.findDevice(adapterIp);
+
+  if (!device && !adapterIpFromEnv && allowAdapterPrompt) {
+    console.log();
+    console.log('Last adapter is not working, please choose a new one.');
+    console.log();
+    adapterIp = selectAdapterIp(rootDir, undefined, { ignoreCache: true });
+    device = Cap.findDevice(adapterIp);
+  }
+
+  if (!device) {
+    console.warn(`[capture] No packet capture device matched adapter IP "${adapterIp}".`);
+    return { enabled: false, reason: 'device-missing', adapterIp };
+  }
+
+  const buffer = Buffer.alloc(65535);
+
+  try {
+    cap.open(device, CAPTURE_FILTER, buffer.length, buffer);
+    cap.setMinBytes && cap.setMinBytes(0);
+  } catch (error) {
+    console.warn('[capture] Failed to open packet capture. Run as Administrator and confirm Npcap is installed.');
+    console.warn(`[capture] ${error.message}`);
+    return { enabled: false, reason: 'open-failed', adapterIp, device, error };
+  }
+
+  cap.on('packet', (nbytes) => {
+    try {
+      const ethernet = decoders.Ethernet(buffer);
+      const ip = decoders.IPV4(buffer, ethernet.offset);
+      const udp = decoders.UDP(buffer, ip.offset);
+      const payload = buffer.slice(udp.offset, nbytes);
+      manager.handle(payload);
+    } catch (error) {
+      console.error('[capture] Error processing packet payload:', error);
+    }
+  });
+
+  console.log(`[capture] Listening on ${adapterIp} with filter "${CAPTURE_FILTER}".`);
+  return { enabled: true, adapterIp, device, cap };
+}
+
+function waitForListening(server) {
+  if (server.listening) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const onListening = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (error) => {
+      cleanup();
+      reject(error);
+    };
+    const cleanup = () => {
+      server.off('listening', onListening);
+      server.off('error', onError);
+    };
+
+    server.once('listening', onListening);
+    server.once('error', onError);
+  });
+}
+
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    if (!server || typeof server.close !== 'function') {
+      resolve();
+      return;
+    }
+
+    const hasAddress = typeof server.address === 'function' && server.address();
+    if (!server.listening && !hasAddress) {
+      resolve();
+      return;
+    }
+
+    server.close((error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
+}
+
+async function stopRuntime(runtime) {
+  if (!runtime) return;
+
+  if (runtime.capture && runtime.capture.cap && typeof runtime.capture.cap.close === 'function') {
+    runtime.capture.cap.close();
+  }
+
+  if (runtime.wsServer) {
+    runtime.wsServer.clients.forEach((client) => client.close());
+  }
+
+  await closeServer(runtime.wsServer);
+  await closeServer(runtime.httpServer);
+}
+
+async function start(options = {}) {
+  ensureBigIntJSON();
+
+  const rootDir = options.rootDir || __dirname;
+  const port = normalizePort(options.port ?? process.env.PORT, DEFAULT_HTTP_PORT);
+  const wsPort = normalizePort(options.wsPort ?? process.env.WS_PORT, DEFAULT_WS_PORT);
+  const wsHost = options.wsHost || process.env.WS_HOST || DEFAULT_WS_HOST;
+  const openBrowser = parseBoolean(
+    readOptionOrEnv(options.openBrowser, 'CAMEL_RADAR_OPEN_BROWSER'),
+    true,
+  );
+  const captureEnabled = parseBoolean(
+    readOptionOrEnv(options.capture, 'CAMEL_RADAR_CAPTURE'),
+    true,
+  );
+  const manager = options.manager || new PhotonParser();
+  let wsServer;
+
+  const app = createApp({
+    rootDir,
+    wsHost,
+    wsPort,
+    getWsPort: () => {
+      const address = wsServer && wsServer.address();
+      return address && typeof address === 'object' ? address.port : wsPort;
+    },
+  });
+
+  wsServer = createWebSocketServer(manager, { wsHost, wsPort });
+  await waitForListening(wsServer);
+
+  const httpServer = app.listen(port);
+  await waitForListening(httpServer);
+
+  const httpAddress = httpServer.address();
+  const resolvedPort = httpAddress && typeof httpAddress === 'object' ? httpAddress.port : port;
+  const url = `http://localhost:${resolvedPort}`;
+
+  console.log(`Server is running on ${url}`);
+  console.log(`WebSocket server is running on ws://${wsHost}:${wsServer.address().port}`);
+
+  const capture = captureEnabled
+    ? startPacketCapture(manager, {
+        rootDir,
+        adapterIp: options.adapterIp,
+        allowAdapterPrompt: options.allowAdapterPrompt,
+      })
+    : { enabled: false, reason: 'disabled' };
+
+  if (!capture.enabled) {
+    console.warn(`[capture] Running without live packet capture (${capture.reason}).`);
+  }
+
+  if (openBrowser) {
+    childProcess.exec(`cmd /c start "" "${url}"`, (error) => {
+      if (error) {
+        console.warn(`[browser] Could not open ${url}: ${error.message}`);
+      }
+    });
+  }
+
+  return {
+    app,
+    manager,
+    httpServer,
+    wsServer,
+    capture,
+    port: resolvedPort,
+    wsPort: wsServer.address().port,
+    url,
+    stop: () => stopRuntime({ httpServer, wsServer, capture }),
+  };
+}
+
+if (require.main === module) {
+  start().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  createApp,
+  createWebSocketServer,
+  ensureBigIntJSON,
+  normalizePort,
+  parseBoolean,
+  start,
+  startPacketCapture,
+  stopRuntime,
+};

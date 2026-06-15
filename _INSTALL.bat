@@ -1,8 +1,10 @@
 @echo off
-echo Installing necessary packages
+echo Installing Camel Radar packages
 echo.
-echo npm install
+echo npm ci
 
-call npm install
+cd %~dp0
+
+call npm ci
 
 pause

@@ -2,7 +2,8 @@ const { networkInterfaces } = require('os')
 const readlineSync = require('readline-sync');
 const fs = require('node:fs');
 
-const getAdapterIp = () => {
+const getAdapterIp = (options = {}) => {
+    const ipFile = options.ipFile || 'ip.txt';
     const interfaces = networkInterfaces();
 
     console.log();
@@ -50,7 +51,7 @@ const getAdapterIp = () => {
     console.log(`You have selected "${selectedName} - ${selectedIp}"`);
     console.log();
 
-    fs.writeFile('ip.txt', selectedIp, (err) => {
+    fs.writeFile(ipFile, selectedIp, (err) => {
         if (err)
             console.log("Error when saving ip.")
     });

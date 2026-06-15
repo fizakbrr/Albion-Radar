@@ -13,6 +13,7 @@ import { EventCodes } from './EventCodes.js';
 import { PlayersHandler } from '../Handlers/PlayersHandler.js';
 import { WispCageHandler } from '../Handlers/WispCageHandler.js';
 import { FishingHandler } from '../Handlers/FishingHandler.js';
+import { getRadarWebSocketUrl } from './WebSocketConfig.js';
 
 var canvasMap = document.getElementById("mapCanvas");
 var contextMap = canvasMap.getContext("2d");
@@ -24,7 +25,7 @@ var canvas = document.getElementById("drawCanvas");
 var context = canvas.getContext("2d");
 
 var canvasFlash = document.getElementById("flashCanvas");
-var contextFlash = canvas.getContext("2d");
+var contextFlash = canvasFlash.getContext("2d");
 
 var canvasOurPlayer = document.getElementById("ourPlayerCanvas");
 var contextOurPlayer = canvasOurPlayer .getContext("2d");
@@ -35,6 +36,28 @@ var contextItems = canvasItems.getContext("2d");
 
 import { Settings } from './Settings.js';
 const settings = new Settings();
+
+function updateConnectionStatus(message, state = 'idle') {
+    const status = document.getElementById('connectionStatus');
+    if (!status) return;
+
+    status.textContent = message;
+    status.dataset.state = state;
+}
+
+function showRadarError(message, error) {
+    const errorBox = document.getElementById('radarError');
+    if (errorBox) {
+        errorBox.hidden = false;
+        errorBox.textContent = message;
+    }
+
+    if (error) {
+        console.error(`[camel] ${message}`, error);
+    } else {
+        console.error(`[camel] ${message}`);
+    }
+}
 
 
 
@@ -82,33 +105,94 @@ drawingUtils.initGridCanvas(canvasGrid, contextGrid);
 drawingUtils.InitOurPlayerCanvas(canvasOurPlayer, contextOurPlayer);
 
 
-const socket = new WebSocket('ws://localhost:5002');
+const socket = new WebSocket(getRadarWebSocketUrl());
+const debugState = {
+    messages: 0,
+    events: {},
+    requests: {},
+    responses: {},
+    parseErrors: 0,
+};
+
+window.camelRadarDebug = {
+    getState: () => ({
+        lpX,
+        lpY,
+        messages: debugState.messages,
+        parseErrors: debugState.parseErrors,
+        events: { ...debugState.events },
+        requests: { ...debugState.requests },
+        responses: { ...debugState.responses },
+        players: playersHandler.playersInRange.map(player => ({
+            id: player.id,
+            nickname: player.nickname,
+            posX: player.posX,
+            posY: player.posY,
+            hasPosition: Number.isFinite(player.posX) && Number.isFinite(player.posY),
+        })),
+        harvestables: harvestablesHandler.harvestableList.length,
+        mobs: mobsHandler.mobsList.length,
+        mists: mobsHandler.mistList.length,
+        chests: chestsHandler.chestsList.length,
+    }),
+};
+window.zqRadarDebug = window.camelRadarDebug;
       
 socket.addEventListener('open', (event) => {
-  console.log('Connected to the WebSocket server.');
+  updateConnectionStatus('Connected to local WebSocket stream', 'connected');
+});
 
+socket.addEventListener('close', () => {
+  updateConnectionStatus('WebSocket stream closed. Restart Camel Radar if capture stopped.', 'closed');
+});
+
+socket.addEventListener('error', (event) => {
+  updateConnectionStatus('WebSocket connection failed', 'error');
+  showRadarError('Could not connect to the Camel Radar WebSocket server.', event);
 });
 
 socket.addEventListener('message', (event) => {
-  var data = JSON.parse(event.data);
+  let data;
+  let extractedDictionary;
+
+  try {
+    data = JSON.parse(event.data);
+    extractedDictionary = JSON.parse(data.dictionary);
+  } catch (error) {
+    debugState.parseErrors++;
+    showRadarError('Received an unreadable WebSocket message.', error);
+    return;
+  }
+
+  debugState.messages++;
+  updateConnectionStatus(`Receiving stream (${debugState.messages} messages)`, 'connected');
 
   // Extract the string and dictionary from the object
   var extractedString = data.code;
 
-  var extractedDictionary = JSON.parse(data.dictionary);
+  const parameters = extractedDictionary["parameters"] || {};
+  const debugCode = parameters[252] ?? parameters[253] ?? "unknown";
 
   switch (extractedString)
   {
     case "request":
-        onRequest(extractedDictionary["parameters"]);
+        debugState.requests[debugCode] = (debugState.requests[debugCode] || 0) + 1;
+        onRequest(parameters);
         break;
 
     case "event":
-        onEvent(extractedDictionary["parameters"]);
+        debugState.events[debugCode] = (debugState.events[debugCode] || 0) + 1;
+        onEvent(parameters);
         break;
 
     case "response":
-        onResponse(extractedDictionary["parameters"]);
+        debugState.responses[debugCode] = (debugState.responses[debugCode] || 0) + 1;
+        onResponse(parameters);
+        break;
+
+    default:
+        debugState.parseErrors++;
+        showRadarError(`Unsupported WebSocket message type "${extractedString}".`);
         break;
   }
 });
@@ -154,7 +238,7 @@ function onEvent(Parameters)
             const posX = Parameters[4];
             const posY = Parameters[5];
 
-            //playersHandler.updatePlayerPosition(id, posX, posY, Parameters);
+            playersHandler.updatePlayerPosition(id, posX, posY, Parameters);
             mobsHandler.updateMistPosition(id, posX, posY);
             mobsHandler.updateMobPosition(id, posX, posY);
             break;
@@ -194,23 +278,14 @@ function onEvent(Parameters)
         
         // TEST
         case EventCodes.MountHealthUpdate:
-            console.log();
-            console.log("MountHealthUpdate");
-            console.log(Parameters);
             break;
 
         // TEST
         case EventCodes.CharacterStats:
-            console.log();
-            console.log("CharacterStats");
-            console.log(Parameters);
             break;
 
         // TEST
         case EventCodes.RegenerationHealthEnergyComboChanged:
-            console.log();
-            console.log("RegenerationHealthEnergyComboChanged");
-            console.log(Parameters);
             break;
 
 
@@ -253,9 +328,6 @@ function onEvent(Parameters)
             break;
 
         case 590:
-            console.log()
-            console.log("Key sync")
-            console.log(Parameters)
             break;
 
         /*default:
@@ -267,11 +339,15 @@ function onEvent(Parameters)
 function onRequest(Parameters)
 { 
     // Player moving
-    if (Parameters[253] == 21)
+    if (Parameters[253] == 21 || Parameters[253] == 22)
     {
-        lpX = Parameters[1][0];
-        lpY = Parameters[1][1];
-        console.log(lpX)
+        const position = Array.isArray(Parameters[1]) ? Parameters[1] : Parameters[3];
+
+        if (Array.isArray(position) && position.length >= 2)
+        {
+            lpX = position[0];
+            lpY = position[1];
+        }
     }
 }
 
@@ -289,8 +365,11 @@ function onResponse(Parameters)
     // All data on the player joining the map (us)
     else if (Parameters[253] == 2)
     {
-        lpX = Parameters[9][0];
-        lpY = Parameters[9][1];
+        if (Array.isArray(Parameters[9]) && Parameters[9].length >= 2)
+        {
+            lpX = Parameters[9][0];
+            lpY = Parameters[9][1];
+        }
 
         // TODO bz portals does not trigger this event, so when change map check if map id is portal in event 35 above ^
         // And clear everything too 
@@ -441,13 +520,19 @@ function setDrawingViews() {
 
     // Check if the values exist in local storage and handle them
     if (mainWindowMarginXValue !== null) {
-        document.getElementById('bottomCanvas').style.left = mainWindowMarginXValue + "px";
-        document.getElementById('drawCanvas').style.left = mainWindowMarginYValue + "px";
+        const bottomCanvas = document.getElementById('bottomCanvas');
+        const drawCanvas = document.getElementById('drawCanvas');
+
+        if (bottomCanvas) bottomCanvas.style.left = mainWindowMarginXValue + "px";
+        if (drawCanvas) drawCanvas.style.left = mainWindowMarginXValue + "px";
     }
 
     if (mainWindowMarginYValue !== null) {
-        document.getElementById('drawCanvas').style.top = mainWindowMarginYValue + "px";
-        document.getElementById('bottomCanvas').style.top = mainWindowMarginYValue + "px";
+        const bottomCanvas = document.getElementById('bottomCanvas');
+        const drawCanvas = document.getElementById('drawCanvas');
+
+        if (drawCanvas) drawCanvas.style.top = mainWindowMarginYValue + "px";
+        if (bottomCanvas) bottomCanvas.style.top = mainWindowMarginYValue + "px";
     }
 
     if (itemsWindowMarginXValue !== null) {

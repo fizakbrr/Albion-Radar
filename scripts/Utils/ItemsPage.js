@@ -2,27 +2,69 @@ var canvasItems = document.getElementById("thirdCanvas");
 var contextItems = canvasItems.getContext("2d");
 
 import { Settings } from './Settings.js';
+import { getRadarWebSocketUrl } from './WebSocketConfig.js';
 const settings = new Settings();
+
+function updateItemsStatus(message, state = 'idle') {
+    const status = document.getElementById('itemsStatus');
+    if (!status) return;
+
+    status.textContent = message;
+    status.dataset.state = state;
+}
+
+function showItemsError(message, error) {
+    const errorBox = document.getElementById('itemsError');
+    if (errorBox) {
+        errorBox.hidden = false;
+        errorBox.textContent = message;
+    }
+
+    if (error) {
+        console.error(`[camel] ${message}`, error);
+    } else {
+        console.error(`[camel] ${message}`);
+    }
+}
 
 var itemsInfo = new ItemsInfo();
 itemsInfo.initItems().then(() => {
     var players = [];
 
-    const socket = new WebSocket('ws://localhost:5002');
+    const socket = new WebSocket(getRadarWebSocketUrl());
         
     socket.addEventListener('open', (event) => {
-    console.log('Connected to the WebSocket server.');
+        updateItemsStatus('Connected to local WebSocket stream', 'connected');
+    });
 
+    socket.addEventListener('close', () => {
+        updateItemsStatus('WebSocket stream closed', 'closed');
+    });
+
+    socket.addEventListener('error', (event) => {
+        updateItemsStatus('WebSocket connection failed', 'error');
+        showItemsError('Could not connect to the Camel Radar WebSocket server.', event);
     });
 
     socket.addEventListener('message', (event) => {
-    var data = JSON.parse(event.data);
+    let data;
+    let extractedDictionary;
+
+    try {
+        data = JSON.parse(event.data);
+        extractedDictionary = JSON.parse(data.dictionary);
+    } catch (error) {
+        showItemsError('Received an unreadable WebSocket message.', error);
+        return;
+    }
 
     // Extract the string and dictionary from the object
     var extractedString = data.code;
 
-    var extractedDictionary = JSON.parse(data.dictionary);
     var parameters = extractedDictionary["parameters"];
+    if (!parameters) return;
+
+    updateItemsStatus('Receiving player equipment stream', 'connected');
 
     switch (extractedString)
     {
@@ -81,7 +123,7 @@ itemsInfo.initItems().then(() => {
 
         try
         {
-            items = Parameters[2];
+            items = parameters[2];
         }
         catch { }
 

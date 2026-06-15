@@ -80,12 +80,13 @@ class MobsHandler
 
     NewMobEvent(parameters)
     {
-        console.log(parameters)
-
         const id = parseInt(parameters[0]); // entity id
         let typeId = parseInt(parameters[1]); // real type id
 
         const loc = parameters[7];
+        if (!Array.isArray(loc) || loc.length < 2)
+            return;
+
         let posX = loc[0];
         let posY = loc[1];
 
