@@ -12,39 +12,46 @@ export class PlayersDrawing extends DrawingUtils
         this.itemsInfo = newData;
     }
 
+    ensureItemsCanvasHeight(canvas, rowCount)
+    {
+        const rowHeight = 70;
+        const requiredHeight = Math.max(500, 35 + (rowCount * rowHeight));
+
+        if (canvas.height !== requiredHeight)
+            canvas.height = requiredHeight;
+
+        if (canvas.style.height !== requiredHeight + "px")
+            canvas.style.height = requiredHeight + "px";
+    }
+
     drawItems(context, canvas, players, devMode)
     {
         if (!this.settings.settingDot)
             return;
 
+        const playersWithItems = players.filter(player => player.items != null);
+        this.ensureItemsCanvasHeight(canvas, playersWithItems.length);
+
         let posY = 15;
 
-        if (players.length <= 0)
+        if (playersWithItems.length <= 0)
         {
             this.settings.ClearPreloadedImages("Items");
             return;
         }
 
-        for (const playerOne of players)
+        for (const playerOne of playersWithItems)
         {
             const items = playerOne.items;
 
-            if (items == null) continue;
-
-
             let posX = 5;
-            const total = posY + 20;
-
-            // TODO
-            // Show more than few players
-            if (total > canvas.height) break; // Ecxeed canvas size
 
             const flagId = playerOne.flagId || 0;
             const flagName = FactionFlagInfo[flagId] || FactionFlagInfo[0];
             this.DrawCustomImage(context, posX + 10, posY - 5, flagName, 'Flags', 20);
             let posTemp = posX + 25;
 
-            const nickname = playerOne.nickname;
+            const nickname = String(playerOne.nickname || "Unknown");
             this.drawTextItems(posTemp, posY, nickname, context, "14px", "white");
 
             posTemp += context.measureText(nickname).width + 10;

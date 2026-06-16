@@ -65,9 +65,6 @@ export class HarvestablesDrawing extends DrawingUtils  {
 
 
             const point = this.transformPoint(harvestableOne.hX, harvestableOne.hY);
-
-            // TODO
-            // Change Resources to Animals/LHarvestables (living harvestables)
             this.DrawCustomImage(ctx, point.x, point.y, draw, "Resources", 50);
 
             if (this.settings.livingResourcesID)

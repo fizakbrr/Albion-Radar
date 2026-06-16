@@ -117,8 +117,7 @@ export class MobsDrawing extends DrawingUtils
 
             if (drawHp)
             {
-                // TODO
-                // Draw health bar?
+                // Mob packets only expose one health-like value here, not a max value for a bar.
                 const textWidth = ctx.measureText(mobOne.health).width;
                 this.drawTextItems(point.x - textWidth /2, point.y + 24, mobOne.health, ctx, "12px", "yellow");
             }

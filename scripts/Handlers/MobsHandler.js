@@ -214,8 +214,7 @@ class MobsHandler
 
         const h = new Mob(id, typeId, posX, posY, health, enchant, rarity);
 
-        // TODO
-        // List of enemies
+        // Known enemy and living-resource ids from MobsInfo.
         if (this.mobinfo[typeId] != null) 
         {
             const mobsInfo = this.mobinfo[typeId];

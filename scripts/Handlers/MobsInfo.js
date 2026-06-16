@@ -84,7 +84,7 @@ class MobsInfo{
         this.addItem(384, 5, EnemyType.LivingSkinnable, "hide"); // T5_MOB_TREASURE_GIANTSNAKE
         this.addItem(385, 6, EnemyType.LivingSkinnable, "hide"); // T6_MOB_TREASURE_DRAGON
 
-        // Roads // TODO
+        // Roads hide ids stay disabled until the 322 collision with CRYSTALSPIDER is resolved.
         /*this.addItem(322, 1, EnemyType.LivingSkinnable, "hide"); // SALAMANDER
         this.addItem(323, 3, EnemyType.LivingSkinnable, "hide"); // STAG
         this.addItem(324, 4, EnemyType.LivingSkinnable, "hide"); // DIREWOLF
@@ -366,8 +366,7 @@ class MobsInfo{
         //#endregion
         
         
-        // TODO
-        // ADD ENEMIES
+        // Additional enemy tables stay disabled until duplicate ids and missing icon names are resolved.
         //#region Enemies
 
         //#region Avalon
@@ -841,7 +840,7 @@ class MobsInfo{
         //#endregion
         //#endregion
         
-        // TODO
+        // Morgana ids are not mapped yet.
         //#region Morgana
 
         //#endregion

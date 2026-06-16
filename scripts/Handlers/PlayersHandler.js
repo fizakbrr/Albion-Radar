@@ -217,8 +217,13 @@ export class PlayersHandler {
     }
 
     updateLocalPlayerNextPosition(posX, posY) {
-        // TODO: Implement update local player next position
-        throw new Error('Not implemented');
+        if (!Number.isFinite(posX) || !Number.isFinite(posY))
+            return;
+
+        this.localPlayer.oldPosX = this.localPlayer.posX;
+        this.localPlayer.oldPosY = this.localPlayer.posY;
+        this.localPlayer.posX = posX;
+        this.localPlayer.posY = posY;
     }
 
     updatePlayerMounted(id, mounted)
@@ -238,19 +243,21 @@ export class PlayersHandler {
     }
 
     updateLocalPlayerPosition(posX, posY) {
-        // Implement a local player lock mechanism
+        if (!Number.isFinite(posX) || !Number.isFinite(posY))
+            return;
+
+        this.localPlayer.oldPosX = this.localPlayer.posX;
+        this.localPlayer.oldPosY = this.localPlayer.posY;
         this.localPlayer.posX = posX;
         this.localPlayer.posY = posY;
     }
 
     localPlayerPosX() {
-        // Implement a local player lock mechanism
-        return this.localPlayer.posX;
+        return Number.isFinite(this.localPlayer.posX) ? this.localPlayer.posX : 0;
     }
 
     localPlayerPosY() {
-        // Implement a local player lock mechanism
-        return this.localPlayer.posY;
+        return Number.isFinite(this.localPlayer.posY) ? this.localPlayer.posY : 0;
      }
 
     updatePlayerPosition(id, posX, posY, parameters)

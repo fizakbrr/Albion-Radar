@@ -62,14 +62,9 @@ export class FishingHandler
         this.fishes.push(fish)
     }
 
-    // TODO
     FishingEnd(Parameters)
     {
         if (!this.settings.showFish) return;
-
-        console.log("Fishing END:");
-        console.log(Parameters);
-        console.log();
 
         const id = Parameters[0];
 

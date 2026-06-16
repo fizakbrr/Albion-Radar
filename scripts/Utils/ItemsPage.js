@@ -112,8 +112,6 @@ itemsInfo.initItems().then(() => {
 
     function RemovePlayer(parameters)
     {
-        console.log(players.find(p => p.id == parameters[0]));
-
         players = players.filter(player => player.id != parameters[0]);
     }
 
@@ -138,32 +136,39 @@ itemsInfo.initItems().then(() => {
 
 
 
+    function ensureItemsCanvasHeight(rowCount)
+    {
+        const rowHeight = 70;
+        const requiredHeight = Math.max(500, 35 + (rowCount * rowHeight));
+
+        if (canvasItems.height !== requiredHeight)
+            canvasItems.height = requiredHeight;
+
+        if (canvasItems.style.height !== requiredHeight + "px")
+            canvasItems.style.height = requiredHeight + "px";
+    }
+
     function DrawItems()
     {
+        const playersWithItems = players.filter(player => player.items != null && player.items != undefined);
+        ensureItemsCanvasHeight(playersWithItems.length);
         contextItems.clearRect(0, 0, canvasItems.width, canvasItems.height);
 
         if (!settings.settingItems) return;
 
         let posY = 15;
 
-        if (players.length <= 0)
+        if (playersWithItems.length <= 0)
         {
             settings.ClearPreloadedImages("Items");
             return;
         }
 
-        for (const playerOne of players)
+        for (const playerOne of playersWithItems)
         {
             const items = playerOne.items;
 
-            if (items == null || items == undefined) continue;
-
             let posX = 5;
-            const total = posY + 20;
-
-            // TODO
-            // Show more than few players 
-            if (total > canvasItems.height) break; // Ecxeed canvas size
 
             /*const flagId = playerOne.flagId || 0
             const flagName = FactionFlagInfo[flagId]
@@ -172,7 +177,7 @@ itemsInfo.initItems().then(() => {
 
             let posTemp = posX;
 
-            const nickname = playerOne.name;
+            const nickname = String(playerOne.name || "Unknown");
             drawTextItems(posTemp, posY, nickname, contextItems, "14px", "white");
 
             posTemp += contextItems.measureText(nickname).width + 10;

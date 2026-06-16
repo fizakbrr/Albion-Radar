@@ -317,12 +317,10 @@ function onEvent(Parameters)
             wispCageHandler.CageOpenedEvent(Parameters);
             break;
 
-        // TODO
         case EventCodes.NewFishingZoneObject:
             fishingHandler.NewFishEvent(Parameters);
             break;
 
-        // TODO
         case EventCodes.FishingFinished:
             fishingHandler.FishingEnd(Parameters);
             break;
@@ -356,11 +354,13 @@ function onResponse(Parameters)
     // Player change cluster
     if (Parameters[253] == 35)
     {
+        const previousMapId = map.id;
         map.id = Parameters[0];
-        
-        /*console.log()
-        console.log("Cluster change")
-        console.log(Parameters)*/
+
+        if (previousMapId !== -1 && previousMapId !== map.id)
+        {
+            ClearHandlers();
+        }
     }
     // All data on the player joining the map (us)
     else if (Parameters[253] == 2)
@@ -371,8 +371,6 @@ function onResponse(Parameters)
             lpY = Parameters[9][1];
         }
 
-        // TODO bz portals does not trigger this event, so when change map check if map id is portal in event 35 above ^
-        // And clear everything too 
         map.isBZ = Parameters[103] == 2;
 
         /*console.log()

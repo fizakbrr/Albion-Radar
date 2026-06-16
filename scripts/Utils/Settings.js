@@ -457,8 +457,7 @@ export class Settings
         this.enemiesID = this.returnLocalBool("settingEnemiesID");
 
         //#region Mists
-        // TODO
-        // Mists beasts
+        // Mist boss toggles
         this.bossCrystalSpider = this.returnLocalBool("settingBossCrystalSpider");
         this.bossFairyDragon = this.returnLocalBool("settingBossFairyDragon");
         this.bossVeilWeaver = this.returnLocalBool("settingBossVeilWeaver");
