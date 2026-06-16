@@ -21,7 +21,8 @@ export class MapDrawing extends DrawingUtils
         if (curr_map.id < 0)
             return;
 
-        this.DrawImageMap(ctx, curr_map.hX*4, curr_map.hY*4, curr_map.id.toString(), 825*4, curr_map);
+        const scale = this.getRadarScale();
+        this.DrawImageMap(ctx, curr_map.hX * scale, curr_map.hY * scale, curr_map.id.toString(), 825 * scale, curr_map);
     }
 
     DrawImageMap(ctx, x, y, imageName, size, curr_map)

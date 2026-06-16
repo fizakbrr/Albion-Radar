@@ -72,6 +72,8 @@ type IgnoreEntry = {
   Type: IgnoreType
 }
 
+type RadarRange = "normal" | "wide" | "far"
+
 type EnchantMatrixValue = Record<"e0" | "e1" | "e2" | "e3" | "e4", boolean[]>
 
 const navItems: NavItem[] = [
@@ -145,6 +147,12 @@ const livingResources = [
   ["Rock", "settingLivingRockEnchants"],
 ] as const
 
+const radarRangeOptions: Array<{ value: RadarRange; label: string; description: string }> = [
+  { value: "normal", label: "Normal", description: "Current canvas scale." },
+  { value: "wide", label: "Wide", description: "More local objects with moderate crowding." },
+  { value: "far", label: "Far", description: "Maximum zoom-out for known objects." },
+]
+
 function readBoolean(key: string, defaultValue = false) {
   const value = window.localStorage.getItem(key)
   if (value === null) return defaultValue
@@ -153,6 +161,16 @@ function readBoolean(key: string, defaultValue = false) {
 
 function writeBoolean(key: string, value: boolean) {
   window.localStorage.setItem(key, String(value))
+  window.dispatchEvent(new CustomEvent("camel-settings-change", { detail: { key, value } }))
+}
+
+function readString<T extends string>(key: string, fallback: T, allowed: readonly T[]) {
+  const raw = window.localStorage.getItem(key) as T | null
+  return raw && allowed.includes(raw) ? raw : fallback
+}
+
+function writeString(key: string, value: string) {
+  window.localStorage.setItem(key, value)
   window.dispatchEvent(new CustomEvent("camel-settings-change", { detail: { key, value } }))
 }
 
@@ -203,6 +221,20 @@ function useJsonSetting<T>(key: string, fallback: T) {
     (next: T) => {
       setValue(next)
       writeJson(key, next)
+    },
+    [key],
+  )
+
+  return [value, update] as const
+}
+
+function useStringSetting<T extends string>(key: string, fallback: T, allowed: readonly T[]) {
+  const [value, setValue] = useState(() => readString(key, fallback, allowed))
+
+  const update = useCallback(
+    (next: T) => {
+      setValue(next)
+      writeString(key, next)
     },
     [key],
   )
@@ -500,6 +532,38 @@ function SettingSwitch({
   )
 }
 
+function RadarRangeSelect() {
+  const [value, setValue] = useStringSetting<RadarRange>(
+    "settingRadarRange",
+    "normal",
+    radarRangeOptions.map((option) => option.value),
+  )
+  const selected = radarRangeOptions.find((option) => option.value === value) ?? radarRangeOptions[0]
+
+  return (
+    <div className="flex min-h-24 items-start justify-between gap-5 rounded-lg border bg-background/42 p-4">
+      <div className="grid gap-1.5">
+        <Label htmlFor="setting-radar-range" className="text-[0.98rem] font-[740]">
+          Radar range
+        </Label>
+        <p className="text-sm font-medium leading-5 text-muted-foreground">{selected.description}</p>
+      </div>
+      <Select value={value} onValueChange={(next) => setValue(next as RadarRange)}>
+        <SelectTrigger id="setting-radar-range" className="w-32 shrink-0">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {radarRangeOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 function PlayersPage() {
   return (
     <section className="w-full max-w-340">
@@ -522,6 +586,7 @@ function PlayersPage() {
             <CardDescription>Choose what the radar draws and how it alerts you.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
+            <RadarRangeSelect />
             <SettingSwitch
               storageKey="settingDot"
               title="Radar dots"

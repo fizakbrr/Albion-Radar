@@ -24,6 +24,8 @@ export class Settings
         this.settingDistance = false;
         this.settingGuild = false;
         this.scale = 4.0;
+        this.radarRange = "normal";
+        this.harvestableRange = 80;
         this.settingSound = false;
         this.settingFlash = false;
 
@@ -361,9 +363,34 @@ export class Settings
         return value == "true";
     }
 
+    updateRadarRange()
+    {
+        switch (localStorage.getItem("settingRadarRange"))
+        {
+            case "wide":
+                this.radarRange = "wide";
+                this.scale = 3.0;
+                this.harvestableRange = 105;
+                break;
+
+            case "far":
+                this.radarRange = "far";
+                this.scale = 2.4;
+                this.harvestableRange = 130;
+                break;
+
+            default:
+                this.radarRange = "normal";
+                this.scale = 4.0;
+                this.harvestableRange = 80;
+                break;
+        }
+    }
+
     update()
     {
         this.showMapBackground = this.returnLocalBool("settingShowMap");
+        this.updateRadarRange();
 
         //#region Players
         this.settingDot = this.returnLocalBool("settingDot", true);

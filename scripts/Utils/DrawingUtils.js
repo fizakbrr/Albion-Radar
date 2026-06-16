@@ -63,6 +63,11 @@
 
     lerp(a, b, t) { return a + (b - a) * t; }
 
+    getRadarScale()
+    {
+        return Number.isFinite(this.settings?.scale) ? this.settings.scale : 4;
+    }
+
 
     DrawCustomImage(ctx, x, y, imageName, folder, size)
     {
@@ -101,8 +106,9 @@
 
         let newX = x * angle - y * angle;
         let newY = x * angle + y * angle;
-        newX *= 4;
-        newY *= 4;
+        const scale = this.getRadarScale();
+        newX *= scale;
+        newY *= scale;
 
         newX += 250;
         newY += 250;

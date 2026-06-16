@@ -215,8 +215,9 @@ class HarvestablesHandler
 
     removeNotInRange(lpX, lpY)
     {
+        const range = Number.isFinite(this.settings?.harvestableRange) ? this.settings.harvestableRange : 80;
         this.harvestableList = this.harvestableList.filter(
-            (x) => this.calculateDistance(lpX, lpY, x.posX, x.posY) <= 80
+            (x) => this.calculateDistance(lpX, lpY, x.posX, x.posY) <= range
         );
 
         this.harvestableList = this.harvestableList.filter(item => item.size !== undefined);
