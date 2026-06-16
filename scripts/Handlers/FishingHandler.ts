@@ -1,5 +1,7 @@
 class Fish
 {
+    [key: string]: any;
+
     constructor(id, posX, posY, type, sizeSpawned = 0, sizeLeftToSpawn = 0)
     {
         this.id = id;
@@ -16,6 +18,8 @@ class Fish
 
 export class FishingHandler
 {
+    [key: string]: any;
+
     constructor(settings)
     {
         this.settings = settings;
@@ -49,7 +53,7 @@ export class FishingHandler
 
     }
 
-    upsertFish(...args)
+    upsertFish(...args: ConstructorParameters<typeof Fish>)
     {
         const fish = new Fish(...args);
 

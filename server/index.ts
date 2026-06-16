@@ -5,8 +5,8 @@ const path = require('path');
 const express = require('express');
 const WebSocket = require('ws');
 
-const PhotonParser = require('./scripts/classes/PhotonPacketParser');
-const EventCodes = require('./scripts/Utils/EventCodesApp.js');
+const PhotonParser = require('../scripts/classes/PhotonPacketParser');
+const EventCodes = require('../scripts/Utils/EventCodesApp.js');
 
 const DEFAULT_HTTP_PORT = 5001;
 const DEFAULT_WS_PORT = 5002;
@@ -14,15 +14,30 @@ const DEFAULT_WS_HOST = 'localhost';
 const CAPTURE_FILTER = 'udp and (dst port 5056 or src port 5056)';
 const BRAND_NAME = 'Camel Radar';
 
-function readOptionOrEnv(optionValue, primaryEnv, legacyEnv) {
+function resolveProjectRoot() {
+  if (path.basename(__dirname) === 'server' && path.basename(path.dirname(__dirname)) === 'dist-server') {
+    return path.resolve(__dirname, '..', '..');
+  }
+
+  return path.basename(__dirname) === 'dist-server' ? path.resolve(__dirname, '..') : path.resolve(__dirname, '..');
+}
+
+function resolveScriptsDir(rootDir, providedScriptsDir = undefined) {
+  if (providedScriptsDir) return providedScriptsDir;
+
+  const compiledScriptsDir = path.join(rootDir, 'dist-runtime', 'scripts');
+  return fs.existsSync(compiledScriptsDir) ? compiledScriptsDir : path.join(rootDir, 'scripts');
+}
+
+function readOptionOrEnv(optionValue, primaryEnv, legacyEnv = undefined) {
   if (optionValue !== undefined && optionValue !== null) return optionValue;
   if (process.env[primaryEnv] !== undefined) return process.env[primaryEnv];
   return legacyEnv ? process.env[legacyEnv] : undefined;
 }
 
 function ensureBigIntJSON() {
-  if (!BigInt.prototype.toJSON) {
-    BigInt.prototype.toJSON = function toJSON() {
+  if (!(BigInt.prototype as any).toJSON) {
+    (BigInt.prototype as any).toJSON = function toJSON() {
       return this.toString();
     };
   }
@@ -43,8 +58,9 @@ function normalizePort(value, defaultPort) {
   return Number.isInteger(parsed) && parsed >= 0 && parsed <= 65535 ? parsed : defaultPort;
 }
 
-function createApp(options = {}) {
-  const rootDir = options.rootDir || __dirname;
+function createApp(options: any = {}) {
+  const rootDir = options.rootDir || resolveProjectRoot();
+  const scriptsDir = resolveScriptsDir(rootDir, options.scriptsDir);
   const getWsPort = options.getWsPort || (() => options.wsPort || DEFAULT_WS_PORT);
   const wsHost = options.wsHost || DEFAULT_WS_HOST;
   const frontendDist = path.join(rootDir, 'dist');
@@ -72,7 +88,7 @@ function createApp(options = {}) {
     res.type('image/png').sendFile(path.join(rootDir, 'images', 'camel-logo.png'));
   });
 
-  app.use('/scripts', express.static(path.join(rootDir, 'scripts')));
+  app.use('/scripts', express.static(scriptsDir));
   app.use('/images', express.static(path.join(rootDir, 'images')));
   app.use('/images/Resources', express.static(path.join(rootDir, 'images', 'Resources')));
   app.use('/images/Maps', express.static(path.join(rootDir, 'images', 'Maps')));
@@ -155,7 +171,7 @@ function sendToClients(server, payload) {
   });
 }
 
-function createWebSocketServer(manager, options = {}) {
+function createWebSocketServer(manager, options: any = {}) {
   const wsHost = options.wsHost || DEFAULT_WS_HOST;
   const wsPort = normalizePort(options.wsPort, DEFAULT_WS_PORT);
   const server = new WebSocket.Server({ port: wsPort, host: wsHost });
@@ -199,7 +215,7 @@ function readCachedAdapterIp(rootDir) {
   return adapterIp || undefined;
 }
 
-function selectAdapterIp(rootDir, providedIp, options = {}) {
+function selectAdapterIp(rootDir, providedIp, options: any = {}) {
   if (providedIp) return providedIp;
 
   const cachedIp = options.ignoreCache ? undefined : readCachedAdapterIp(rootDir);
@@ -211,12 +227,12 @@ function selectAdapterIp(rootDir, providedIp, options = {}) {
     return cachedIp;
   }
 
-  const { getAdapterIp } = require('./server-scripts/adapter-selector');
+  const { getAdapterIp } = require('./adapter-selector');
   return getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
 }
 
-function startPacketCapture(manager, options = {}) {
-  const rootDir = options.rootDir || __dirname;
+function startPacketCapture(manager, options: any = {}) {
+  const rootDir = options.rootDir || resolveProjectRoot();
   const adapterIpFromEnv = readOptionOrEnv(
     options.adapterIp,
     'CAMEL_RADAR_ADAPTER_IP',
@@ -241,7 +257,7 @@ function startPacketCapture(manager, options = {}) {
   }
 
   if (!adapterIp && allowAdapterPrompt) {
-    const { getAdapterIp } = require('./server-scripts/adapter-selector');
+    const { getAdapterIp } = require('./adapter-selector');
     adapterIp = getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
   }
 
@@ -295,7 +311,7 @@ function startPacketCapture(manager, options = {}) {
 function waitForListening(server) {
   if (server.listening) return Promise.resolve();
 
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     const onListening = () => {
       cleanup();
       resolve();
@@ -315,7 +331,7 @@ function waitForListening(server) {
 }
 
 function closeServer(server) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     if (!server || typeof server.close !== 'function') {
       resolve();
       return;
@@ -349,10 +365,10 @@ async function stopRuntime(runtime) {
   await closeServer(runtime.httpServer);
 }
 
-async function start(options = {}) {
+async function start(options: any = {}) {
   ensureBigIntJSON();
 
-  const rootDir = options.rootDir || __dirname;
+  const rootDir = options.rootDir || resolveProjectRoot();
   const port = normalizePort(options.port ?? process.env.PORT, DEFAULT_HTTP_PORT);
   const wsPort = normalizePort(options.wsPort ?? process.env.WS_PORT, DEFAULT_WS_PORT);
   const wsHost = options.wsHost || process.env.WS_HOST || DEFAULT_WS_HOST;
@@ -440,3 +456,5 @@ module.exports = {
   startPacketCapture,
   stopRuntime,
 };
+
+export {};

@@ -3,6 +3,8 @@ const PhotonCommand = require('./PhotonCommand.js');
 
 
 class PhotonPacket {
+	[key: string]: any;
+
 	constructor(parent, buff) {
 		this.parent = parent;
 		this.emit = parent.emit;
@@ -51,3 +53,5 @@ class PhotonPacket {
 }
 
 module.exports = PhotonPacket;
+
+export {};

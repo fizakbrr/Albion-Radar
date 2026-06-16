@@ -1,21 +1,50 @@
 {
-  "name": "camel-radar",
+  "name": "camel-albion-radar",
   "version": "1.0.0",
-  "description": "Camel-branded local Albion Online radar UI with optional packet capture.",
-  "main": "app.js",
+  "description": "Local Albion Online radar overlay and map utility with a React UI, Express/WebSocket runtime, and optional packet capture support.",
+  "main": "dist-server/server/index.js",
   "scripts": {
-    "build": "vite build",
+    "build": "npm run build:client && npm run build:legacy && npm run build:server && npm run build:assets",
+    "build:assets": "node dist-server/tools/copy-runtime-assets.js",
+    "build:client": "vite build",
+    "build:legacy": "tsc -p tsconfig.legacy.json",
+    "build:server": "tsc -p tsconfig.server.json",
     "dev": "vite --host 127.0.0.1",
-    "serve": "node app.js",
-    "start": "npm run build && node app.js",
-    "start:no-capture": "set CAMEL_RADAR_CAPTURE=0&& set CAMEL_RADAR_OPEN_BROWSER=1&& npm run build && node app.js",
-    "test": "npm run build && node --test"
+    "serve": "node dist-server/server/index.js",
+    "start": "npm run build && node dist-server/server/index.js",
+    "start:no-capture": "set CAMEL_RADAR_CAPTURE=0&& set CAMEL_RADAR_OPEN_BROWSER=1&& npm run build && node dist-server/server/index.js",
+    "test": "npm run build && node --test dist-server/tests/app.test.js"
   },
+  "keywords": [
+    "albion-online",
+    "albion-radar",
+    "albion-online-radar",
+    "albion-online-tools",
+    "albion-online-utility",
+    "albion-online-overlay",
+    "albion-map-tool",
+    "game-utility",
+    "desktop-utility",
+    "open-source-game-tool",
+    "typescript",
+    "react",
+    "vite",
+    "express",
+    "websocket"
+  ],
   "author": "fizakbrr",
   "contributors": [
     "Zeldruck",
     "FashionFlora"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fizakbrr/CamelRadar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fizakbrr/CamelRadar/issues"
+  },
+  "homepage": "https://github.com/fizakbrr/CamelRadar#readme",
   "license": "ISC",
   "type": "commonjs",
   "engines": {

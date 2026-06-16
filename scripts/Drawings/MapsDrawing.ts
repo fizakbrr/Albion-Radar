@@ -1,3 +1,5 @@
+import { DrawingUtils } from '../Utils/DrawingUtils.js';
+
 export class MapDrawing extends DrawingUtils 
 {
     constructor(Settings)

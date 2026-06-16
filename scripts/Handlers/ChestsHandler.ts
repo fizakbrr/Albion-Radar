@@ -1,4 +1,6 @@
 class Chest {
+    [key: string]: any;
+
     constructor(id, posX, posY, name) {
         this.id = id;
         this.posX = posX;
@@ -13,7 +15,9 @@ class Chest {
 
 
 
-class ChestsHandler {
+export class ChestsHandler {
+    [key: string]: any;
+
     constructor() {
         this.chestsList = [];
     }

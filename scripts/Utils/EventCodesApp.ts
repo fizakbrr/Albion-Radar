@@ -642,3 +642,5 @@ const EventCodes =
 module.exports = {
     EventCodes
 }
+
+export {};

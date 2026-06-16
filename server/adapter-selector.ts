@@ -2,7 +2,7 @@ const { networkInterfaces } = require('os')
 const readlineSync = require('readline-sync');
 const fs = require('node:fs');
 
-const getAdapterIp = (options = {}) => {
+const getAdapterIp = (options: any = {}) => {
     const ipFile = options.ipFile || 'ip.txt';
     const interfaces = networkInterfaces();
 
@@ -13,6 +13,8 @@ const getAdapterIp = (options = {}) => {
     const selection = {};
     const selectionName = {};
     for (const [name, value] of Object.entries(interfaces)) {
+        if (!Array.isArray(value)) continue;
+
         const detail = value.find(v => v.family === 'IPv4');
         if (!detail) continue;
         selection[i] = detail.address;
@@ -62,3 +64,5 @@ const getAdapterIp = (options = {}) => {
 module.exports = {
     getAdapterIp,
 }
+
+export {};

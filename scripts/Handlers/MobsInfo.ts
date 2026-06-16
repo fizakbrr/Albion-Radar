@@ -1,4 +1,8 @@
-class MobsInfo{
+import { EnemyType } from './MobsHandler.js';
+
+export class MobsInfo{
+    [key: string]: any;
+
 
 
     constructor()

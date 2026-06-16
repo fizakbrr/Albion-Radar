@@ -1,5 +1,17 @@
 class Player {
-    constructor(posX, posY, id, nickname, guildName1, currentHealth, initialHealth, items, flagId) {
+    [key: string]: any;
+
+    constructor(
+        posX = 0,
+        posY = 0,
+        id = null,
+        nickname = "",
+        guildName1 = "",
+        currentHealth = 0,
+        initialHealth = 0,
+        items = null,
+        flagId = 0,
+    ) {
         this.posX = posX;
         this.posY = posY;
         this.oldPosX = posX;
@@ -34,6 +46,8 @@ function readPosition(value)
 }
 
 export class PlayersHandler {
+    [key: string]: any;
+
     constructor(settings) {
         this.playersInRange = [];
         this.playerPositions = new Map();

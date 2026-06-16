@@ -1,4 +1,6 @@
-class ItemsInfo{
+export class ItemsInfo{
+    [key: string]: any;
+
     constructor()
     {
         this.iteminfo = {};

@@ -1,4 +1,4 @@
-const EnemyType = 
+export const EnemyType =
 {
     LivingHarvestable: 0,
     LivingSkinnable: 1,
@@ -10,10 +10,14 @@ const EnemyType =
     Drone: 7,
     MistBoss: 8,
     Events: 9,
-};
+} as const;
+
+export type EnemyTypeValue = typeof EnemyType[keyof typeof EnemyType];
 
 class Mob
 {
+    [key: string]: any;
+
     constructor(id, typeId, posX, posY, health, enchantmentLevel, rarity)
     {
         this.id = id;
@@ -35,6 +39,8 @@ class Mob
 // MIST PORTALS ??
 class Mist
 {
+    [key: string]: any;
+
     constructor(id, posX, posY, name, enchant)
     {
         this.id = id;
@@ -56,8 +62,10 @@ class Mist
     }
 }
 
-class MobsHandler
+export class MobsHandler
 {
+    [key: string]: any;
+
     constructor(settings)
     {
         this.settings = settings;

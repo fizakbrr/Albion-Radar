@@ -16,11 +16,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo/tsconfig.tsbuildinfo",
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["src/*"]
     }
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.legacy.json" },
+    { "path": "./tsconfig.server.json" }
+  ]
 }

@@ -1,4 +1,7 @@
 class Protocol18Reader {
+	buffer: Buffer;
+	offset: number;
+
 	constructor(buffer) {
 		this.buffer = Buffer.from(buffer);
 		this.offset = 0;
@@ -417,3 +420,5 @@ class Protocol18Deserializer {
 }
 
 module.exports = Protocol18Deserializer;
+
+export {};

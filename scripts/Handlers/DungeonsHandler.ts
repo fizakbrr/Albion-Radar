@@ -8,6 +8,8 @@ const DungeonType =
 
 class Dungeon
 {
+    [key: string]: any;
+
     constructor(id, posX, posY, name, type, enchant)
     {
         this.id = id;
@@ -49,8 +51,10 @@ class Dungeon
     }
 }
 
-class DungeonsHandler
+export class DungeonsHandler
 {
+    [key: string]: any;
+
     constructor(Settings)
     {
         this.dungeonList = [];

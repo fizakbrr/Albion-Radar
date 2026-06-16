@@ -1,5 +1,7 @@
 class Cage
 {
+    [key: string]: any;
+
     constructor(id, posX, posY, name)
     {
         this.id = id;
@@ -13,6 +15,8 @@ class Cage
 
 export class WispCageHandler
 {
+    [key: string]: any;
+
     constructor(settings)
     {
         this.settings = settings;

@@ -1,5 +1,7 @@
-class MapH
+export class MapH
 {
+    [key: string]: any;
+
     constructor(id)
     {
         this.id = id;

@@ -1250,20 +1250,8 @@ function useLegacyRadarModule(kind: "radar" | "items") {
         await loadScript("/camel-radar-config.js").catch(() => undefined)
 
         if (kind === "radar") {
-          await loadScripts([
-            "/scripts/Handlers/HarvestablesHandler.js",
-            "/scripts/Handlers/MobsHandler.js",
-            "/scripts/Handlers/ChestsHandler.js",
-            "/scripts/Handlers/DungeonsHandler.js",
-            "/scripts/Handlers/Map.js",
-            "/scripts/Handlers/MobsInfo.js",
-            "/scripts/Handlers/ItemsInfo.js",
-            "/scripts/Handlers/FactionFlagInfo.js",
-            "/scripts/Utils/DrawingUtils.js",
-          ])
           await importLegacyModule("/scripts/Utils/Utils.js")
         } else {
-          await loadScripts(["/scripts/Handlers/ItemsInfo.js"])
           await importLegacyModule("/scripts/Utils/ItemsPage.js")
         }
 
@@ -1282,10 +1270,6 @@ function useLegacyRadarModule(kind: "radar" | "items") {
   }, [kind])
 
   return { status, error }
-}
-
-function loadScripts(sources: string[]) {
-  return sources.reduce((promise, source) => promise.then(() => loadScript(source)), Promise.resolve())
 }
 
 function importLegacyModule(source: string) {

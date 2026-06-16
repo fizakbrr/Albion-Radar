@@ -4,6 +4,8 @@ const Protocol16Deserializer = require('./Protocol16Deserializer');
 const Protocol18Deserializer = require('./Protocol18Deserializer');
 
 class PhotonCommand {
+	[key: string]: any;
+
 	constructor(parent, payload) {
 		this.parent = parent;
 		this.payload = payload;
@@ -172,3 +174,5 @@ class PhotonCommand {
 }
 
 module.exports = PhotonCommand;
+
+export {};

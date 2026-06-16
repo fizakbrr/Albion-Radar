@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
+    "declaration": true,
+    "outDir": "dist-config",
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo/tsconfig.node.tsbuildinfo",
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",

@@ -1,4 +1,3 @@
-
 import { PlayersDrawing } from '../Drawings/PlayersDrawing.js';
 import { HarvestablesDrawing } from '../Drawings/HarvestablesDrawing.js';
 import { MobsDrawing } from '../Drawings/MobsDrawing.js';
@@ -11,30 +10,48 @@ import { FishingDrawing } from '../Drawings/FishingDrawing.js';
 import { EventCodes } from './EventCodes.js';
 
 import { PlayersHandler } from '../Handlers/PlayersHandler.js';
+import { ChestsHandler } from '../Handlers/ChestsHandler.js';
+import { DungeonsHandler } from '../Handlers/DungeonsHandler.js';
+import { HarvestablesHandler } from '../Handlers/HarvestablesHandler.js';
+import { ItemsInfo } from '../Handlers/ItemsInfo.js';
+import { MapH } from '../Handlers/Map.js';
+import { MobsHandler } from '../Handlers/MobsHandler.js';
+import { MobsInfo } from '../Handlers/MobsInfo.js';
 import { WispCageHandler } from '../Handlers/WispCageHandler.js';
 import { FishingHandler } from '../Handlers/FishingHandler.js';
 import { getRadarWebSocketUrl } from './WebSocketConfig.js';
+import { DrawingUtils } from './DrawingUtils.js';
+import { Settings } from './Settings.js';
 
-var canvasMap = document.getElementById("mapCanvas");
+function getCanvasElement(id)
+{
+    const element = document.getElementById(id);
+
+    if (!(element instanceof HTMLCanvasElement))
+        throw new Error(`Missing canvas #${id}`);
+
+    return element;
+}
+
+var canvasMap = getCanvasElement("mapCanvas");
 var contextMap = canvasMap.getContext("2d");
 
-var canvasGrid = document.getElementById("gridCanvas");
+var canvasGrid = getCanvasElement("gridCanvas");
 var contextGrid = canvasGrid.getContext("2d");
 
-var canvas = document.getElementById("drawCanvas");
+var canvas = getCanvasElement("drawCanvas");
 var context = canvas.getContext("2d");
 
-var canvasFlash = document.getElementById("flashCanvas");
+var canvasFlash = getCanvasElement("flashCanvas");
 var contextFlash = canvasFlash.getContext("2d");
 
-var canvasOurPlayer = document.getElementById("ourPlayerCanvas");
+var canvasOurPlayer = getCanvasElement("ourPlayerCanvas");
 var contextOurPlayer = canvasOurPlayer .getContext("2d");
 
 
-var canvasItems = document.getElementById("thirdCanvas");
+var canvasItems = getCanvasElement("thirdCanvas");
 var contextItems = canvasItems.getContext("2d");
 
-import { Settings } from './Settings.js';
 const settings = new Settings();
 
 function updateConnectionStatus(message, state = 'idle') {
@@ -45,7 +62,7 @@ function updateConnectionStatus(message, state = 'idle') {
     status.dataset.state = state;
 }
 
-function showRadarError(message, error) {
+function showRadarError(message, error = undefined) {
     const errorBox = document.getElementById('radarError');
     if (errorBox) {
         errorBox.hidden = false;
@@ -114,7 +131,7 @@ const debugState = {
     parseErrors: 0,
 };
 
-window.camelRadarDebug = {
+(window as any).camelRadarDebug = {
     getState: () => ({
         lpX,
         lpY,
@@ -136,7 +153,7 @@ window.camelRadarDebug = {
         chests: chestsHandler.chestsList.length,
     }),
 };
-window.zqRadarDebug = window.camelRadarDebug;
+(window as any).zqRadarDebug = (window as any).camelRadarDebug;
       
 socket.addEventListener('open', (event) => {
   updateConnectionStatus('Connected to local WebSocket stream', 'connected');
@@ -478,7 +495,7 @@ setInterval(drawItems, intervalItems);
 
 function checkLocalStorage()
 {
-    settings.update(settings);
+    settings.update();
     setDrawingViews();
 }
 
@@ -487,7 +504,7 @@ setInterval(checkLocalStorage, interval)
 
 
 
-document.getElementById("button").addEventListener("click", function () {
+document.getElementById("button")?.addEventListener("click", function () {
     ClearHandlers();
 });
 

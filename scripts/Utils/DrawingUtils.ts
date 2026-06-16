@@ -1,6 +1,8 @@
-﻿class DrawingUtils
+export class DrawingUtils
 {
-    constructor(settings)
+    [key: string]: any;
+
+    constructor(settings = {})
     {
         this.settings = settings;
         this.fontSize = "12px";
@@ -117,10 +119,12 @@
     }
 
 
-    drawText(xTemp, yTemp, text, ctx )
+    drawText(xTemp, yTemp, text, ctx, fontSize = this.fontSize, fontFamily = this.fontFamily, color = this.textColor, _maxWidth = undefined)
     {
-        ctx.font = this.fontSize + " " + this.fontFamily;
-        ctx.fillStyle = this.textColor;
+        const resolvedFontSize = typeof fontSize === "number" ? `${fontSize}px` : fontSize;
+
+        ctx.font = resolvedFontSize + " " + fontFamily;
+        ctx.fillStyle = color;
 
         let x = xTemp;
         let y = yTemp;

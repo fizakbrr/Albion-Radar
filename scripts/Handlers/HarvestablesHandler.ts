@@ -1,4 +1,4 @@
-﻿const HarvestableType = 
+const HarvestableType = 
 {
     Fiber: 'Fiber',
     Hide: 'Hide',
@@ -9,6 +9,8 @@
 
 class Harvestable
 {
+    [key: string]: any;
+
     constructor(id, type, tier, posX, posY, charges, size)
     {
         this.id = id;
@@ -40,8 +42,10 @@ function toArray(value)
     return [];
 }
 
-class HarvestablesHandler
+export class HarvestablesHandler
 {
+    [key: string]: any;
+
     constructor(settings)
     {
         this.harvestableList = [];

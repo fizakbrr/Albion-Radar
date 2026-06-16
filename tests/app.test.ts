@@ -6,7 +6,7 @@ const { test } = require('node:test');
 const BufferCursor = require('buffercursor');
 const WebSocket = require('ws');
 
-const { start } = require('../app');
+const { start } = require('../server/index');
 const Protocol16Deserializer = require('../scripts/classes/Protocol16Deserializer');
 const Protocol18Deserializer = require('../scripts/classes/Protocol18Deserializer');
 const PhotonPacketParser = require('../scripts/classes/PhotonPacketParser');
@@ -17,7 +17,7 @@ function stripBlockComments(source) {
 }
 
 function readActiveLivingResourceEntries() {
-  const mobsInfoPath = path.join(__dirname, '..', 'scripts', 'Handlers', 'MobsInfo.js');
+  const mobsInfoPath = path.join(process.cwd(), 'scripts', 'Handlers', 'MobsInfo.ts');
   const source = stripBlockComments(fs.readFileSync(mobsInfoPath, 'utf8'));
   const addItemPattern =
     /this\.addItem\((\d+),\s*(\d+),\s*EnemyType\.(LivingHarvestable|LivingSkinnable),\s*"([^"]*)"\)/g;
@@ -39,16 +39,16 @@ function readActiveLivingResourceEntries() {
 async function closeClient(client) {
   if (!client || client.readyState === WebSocket.CLOSED) return;
 
-  await new Promise((resolve) => {
+  await new Promise<void>((resolve) => {
     client.once('close', resolve);
     client.close();
   });
 }
 
-function waitForMessages(client, count) {
-  const messages = [];
+function waitForMessages(client, count): Promise<any[]> {
+  const messages: any[] = [];
 
-  return new Promise((resolve, reject) => {
+  return new Promise<any[]>((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error(`Timed out waiting for ${count} WebSocket messages.`));
     }, 2000);
@@ -99,7 +99,7 @@ test('WebSocket server broadcasts fixture events with existing payload shape', a
   const client = new WebSocket(`ws://127.0.0.1:${runtime.wsPort}`);
 
   try {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       client.once('open', resolve);
       client.once('error', reject);
     });
@@ -211,7 +211,7 @@ test('Photon parser emits Protocol18 events with the existing event shape', asyn
   header.writeUInt8(1, 3);
 
   const packet = Buffer.concat([header, command, reliable]);
-  const eventPromise = new Promise((resolve) => manager.once('event', resolve));
+  const eventPromise = new Promise<any>((resolve) => manager.once('event', resolve));
 
   manager.handle(packet);
 
@@ -297,3 +297,5 @@ test('living resource IDs do not collide across active mappings', () => {
     seen.set(entry.id, entry);
   }
 });
+
+export {};

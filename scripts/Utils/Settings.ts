@@ -1,6 +1,7 @@
-
 export class Settings
 {
+    [key: string]: any;
+
     constructor()
     {
         //#region Initialization
@@ -195,7 +196,7 @@ export class Settings
 
     preloadImageAndAddToList(path, container)
     {
-        return new Promise((resolve, reject) =>
+        return new Promise<void>((resolve, reject) =>
         {
             switch (container)
             {

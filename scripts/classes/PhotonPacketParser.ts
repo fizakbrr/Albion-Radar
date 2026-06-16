@@ -2,6 +2,8 @@ const PhotonPacket = require('./PhotonPacket');
 const EventEmitter = require('events');
 
 class PhotonPacketParser extends EventEmitter {
+	[key: string]: any;
+
 	constructor() {
 		super();
 		this.fragments = new Map();
@@ -60,3 +62,5 @@ class PhotonPacketParser extends EventEmitter {
 }
 
 module.exports = PhotonPacketParser;
+
+export {};

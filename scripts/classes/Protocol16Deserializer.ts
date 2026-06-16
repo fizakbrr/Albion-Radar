@@ -1,4 +1,3 @@
-
 class Protocol16Deserializer {
 	static protocol16Type = require('../enumerations/Protocol16Type.json');
 
@@ -219,3 +218,5 @@ class Protocol16Deserializer {
 }
 
 module.exports = Protocol16Deserializer;
+
+export {};

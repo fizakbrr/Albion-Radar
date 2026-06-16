@@ -1,8 +1,20 @@
-var canvasItems = document.getElementById("thirdCanvas");
-var contextItems = canvasItems.getContext("2d");
-
+import { ItemsInfo } from '../Handlers/ItemsInfo.js';
 import { Settings } from './Settings.js';
 import { getRadarWebSocketUrl } from './WebSocketConfig.js';
+
+function getCanvasElement(id)
+{
+    const element = document.getElementById(id);
+
+    if (!(element instanceof HTMLCanvasElement))
+        throw new Error(`Missing canvas #${id}`);
+
+    return element;
+}
+
+var canvasItems = getCanvasElement("thirdCanvas");
+var contextItems = canvasItems.getContext("2d");
+
 const settings = new Settings();
 
 function updateItemsStatus(message, state = 'idle') {
@@ -273,7 +285,7 @@ itemsInfo.initItems().then(() => {
 
     function checkLocalStorage()
     {
-        settings.update(settings);
+        settings.update();
     }
 
     const interval = 5000;
@@ -282,6 +294,8 @@ itemsInfo.initItems().then(() => {
 
 class Player
 {
+    [key: string]: any;
+
     constructor(id, items, cHealth, mHealth, name)
     {
         this.id = id;

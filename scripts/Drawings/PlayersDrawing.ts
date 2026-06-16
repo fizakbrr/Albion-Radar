@@ -1,3 +1,6 @@
+import { DrawingUtils } from '../Utils/DrawingUtils.js';
+import { FactionFlagInfo } from '../Handlers/FactionFlagInfo.js';
+
 export class PlayersDrawing extends DrawingUtils
 {
     constructor(Settings)

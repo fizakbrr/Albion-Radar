@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "ignoreDeprecations": "6.0",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "composite": true,
+    "declaration": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo/tsconfig.server.tsbuildinfo",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "strict": false,
+    "noEmitOnError": true,
+    "rootDir": ".",
+    "outDir": "dist-server"
+  },
+  "include": [
+    "server/**/*.ts",
+    "scripts/classes/**/*.ts",
+    "scripts/Utils/EventCodesApp.ts",
+    "tests/**/*.ts",
+    "tools/**/*.ts"
+  ]
+}
