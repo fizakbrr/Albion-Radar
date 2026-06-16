@@ -290,8 +290,8 @@ class MobsInfo{
         // Roads <=> Tx_MOB_CRITTER_FIBER_ROADS +25
         this.addItem(553, 4, EnemyType.LivingHarvestable, "fiber");
         this.addItem(554, 5, EnemyType.LivingHarvestable, "fiber");
-        this.addItem(555, 6, EnemyType.LivingHarvestable, "fiber"); // 509 // -17
-        this.addItem(556, 7, EnemyType.LivingHarvestable, "fiber"); // 510 // -17
+        this.addItem(555, 6, EnemyType.LivingHarvestable, "fiber");
+        this.addItem(556, 7, EnemyType.LivingHarvestable, "fiber");
         this.addItem(557, 8, EnemyType.LivingHarvestable, "fiber");
         // Veteran Roads <=> Tx_MOB_CRITTER_FIBER_ROADS_VETERAN +25
         this.addItem(558, 4, EnemyType.LivingHarvestable, "fiber");
@@ -299,7 +299,7 @@ class MobsInfo{
         this.addItem(560, 6, EnemyType.LivingHarvestable, "fiber");
         this.addItem(561, 7, EnemyType.LivingHarvestable, "fiber");
         this.addItem(562, 8, EnemyType.LivingHarvestable, "fiber");
-        // Elite Roads <=> Tw_MOB_CRITTER_FIBER_ROADS_ELITE +25
+        // Elite Roads <=> Tx_MOB_CRITTER_FIBER_ROADS_ELITE +25
         this.addItem(563, 4, EnemyType.LivingHarvestable, "fiber");
         this.addItem(564, 5, EnemyType.LivingHarvestable, "fiber");
         this.addItem(565, 6, EnemyType.LivingHarvestable, "fiber");

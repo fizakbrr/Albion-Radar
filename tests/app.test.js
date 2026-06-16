@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { test } = require('node:test');
 
 const BufferCursor = require('buffercursor');
@@ -9,6 +11,30 @@ const Protocol16Deserializer = require('../scripts/classes/Protocol16Deserialize
 const Protocol18Deserializer = require('../scripts/classes/Protocol18Deserializer');
 const PhotonPacketParser = require('../scripts/classes/PhotonPacketParser');
 const EventCodes = require('../scripts/Utils/EventCodesApp.js');
+
+function stripBlockComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function readActiveLivingResourceEntries() {
+  const mobsInfoPath = path.join(__dirname, '..', 'scripts', 'Handlers', 'MobsInfo.js');
+  const source = stripBlockComments(fs.readFileSync(mobsInfoPath, 'utf8'));
+  const addItemPattern =
+    /this\.addItem\((\d+),\s*(\d+),\s*EnemyType\.(LivingHarvestable|LivingSkinnable),\s*"([^"]*)"\)/g;
+  const entries = [];
+  let match;
+
+  while ((match = addItemPattern.exec(source)) !== null) {
+    entries.push({
+      id: Number(match[1]),
+      tier: Number(match[2]),
+      type: match[3],
+      resource: match[4],
+    });
+  }
+
+  return entries;
+}
 
 async function closeClient(client) {
   if (!client || client.readyState === WebSocket.CLOSED) return;
@@ -220,4 +246,54 @@ test('Photon parser ignores commands with invalid declared lengths', () => {
   header.writeUInt8(1, 3);
 
   assert.equal(manager.handle(Buffer.concat([header, command])), false);
+});
+
+test('living resource table has complete active road and mist mappings for every resource type', () => {
+  const entries = readActiveLivingResourceEntries();
+  const entriesById = new Map(entries.map((entry) => [entry.id, entry]));
+  const expectedRanges = [
+    { label: 'wood roads', resource: 'Logs', start: 508, tiers: [4, 5, 6, 7, 8] },
+    { label: 'wood roads veteran', resource: 'Logs', start: 513, tiers: [4, 5, 6, 7, 8] },
+    { label: 'wood roads elite', resource: 'Logs', start: 518, tiers: [4, 5, 6, 7, 8] },
+    { label: 'rock roads', resource: 'rock', start: 523, tiers: [4, 5, 6, 7, 8] },
+    { label: 'rock roads veteran', resource: 'rock', start: 528, tiers: [4, 5, 6, 7, 8] },
+    { label: 'rock roads elite', resource: 'rock', start: 533, tiers: [4, 5, 6, 7, 8] },
+    { label: 'ore roads', resource: 'ore', start: 538, tiers: [4, 5, 6, 7, 8] },
+    { label: 'ore roads veteran', resource: 'ore', start: 543, tiers: [4, 5, 6, 7, 8] },
+    { label: 'ore roads elite', resource: 'ore', start: 548, tiers: [4, 5, 6, 7, 8] },
+    { label: 'fiber roads', resource: 'fiber', start: 553, tiers: [4, 5, 6, 7, 8] },
+    { label: 'fiber roads veteran', resource: 'fiber', start: 558, tiers: [4, 5, 6, 7, 8] },
+    { label: 'fiber roads elite', resource: 'fiber', start: 563, tiers: [4, 5, 6, 7, 8] },
+    { label: 'wood mists green', resource: 'Logs', start: 568, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'rock mists green', resource: 'rock', start: 574, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'ore mists green', resource: 'ore', start: 580, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'fiber mists green', resource: 'fiber', start: 586, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'wood mists red', resource: 'Logs', start: 592, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'rock mists red', resource: 'rock', start: 598, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'ore mists red', resource: 'ore', start: 604, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'fiber mists red', resource: 'fiber', start: 610, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'wood mists dead', resource: 'Logs', start: 616, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'rock mists dead', resource: 'rock', start: 622, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'ore mists dead', resource: 'ore', start: 628, tiers: [3, 4, 5, 6, 7, 8] },
+    { label: 'fiber mists dead', resource: 'fiber', start: 634, tiers: [3, 4, 5, 6, 7, 8] },
+  ];
+
+  for (const { label, resource, start, tiers } of expectedRanges) {
+    tiers.forEach((tier, index) => {
+      const id = start + index;
+      const entry = entriesById.get(id);
+
+      assert.deepEqual(entry, { id, tier, type: 'LivingHarvestable', resource }, `${label} id ${id}`);
+    });
+  }
+});
+
+test('living resource IDs do not collide across active mappings', () => {
+  const entries = readActiveLivingResourceEntries();
+  const seen = new Map();
+
+  for (const entry of entries) {
+    assert.equal(seen.has(entry.id), false, `duplicate living resource id ${entry.id}`);
+    seen.set(entry.id, entry);
+  }
 });
