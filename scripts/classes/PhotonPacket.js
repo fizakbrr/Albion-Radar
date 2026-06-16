@@ -26,6 +26,10 @@ class PhotonPacket {
 	 * - challenge (4 byte)
 	 */
 	parsePhotonHeader() {
+		if (this.payload.length < 12) {
+			throw new Error('Photon packet header is truncated.');
+		}
+
 		this.peerId = this.payload.readUInt16BE();
 		this.flags = this.payload.readUInt8();
 		this.commandCount = this.payload.readUInt8();
@@ -37,6 +41,10 @@ class PhotonPacket {
 		this.parsePhotonHeader();
 
 		for (let i = 0; i < this.commandCount; i++) {
+			if (this.payload.eof()) {
+				throw new Error('Photon packet command count exceeds packet length.');
+			}
+
 			this.commands.push(new PhotonCommand(this, this.payload));
 		}
 	}

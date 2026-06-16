@@ -22,12 +22,24 @@ class PhotonCommand {
 	 * Parse the command header.
 	 */
 	parseCommandHeader() {
+		if (this.payload.length - this.payload.tell() < 12) {
+			throw new Error('Photon command header is truncated.');
+		}
+
 		this.commandType = this.payload.readUInt8();
 		this.channelId = this.payload.readUInt8();
 		this.commandFlags = this.payload.readUInt8();
 		this.payload.seek(this.payload.tell() + 1);
 		this.commandLength = this.payload.readUInt32BE();
 		this.sequenceNumber = this.payload.readUInt32BE();
+
+		if (this.commandLength < 12) {
+			throw new Error(`Photon command length ${this.commandLength} is smaller than the header.`);
+		}
+
+		if (this.commandLength - 12 > this.payload.length - this.payload.tell()) {
+			throw new Error(`Photon command length ${this.commandLength} exceeds remaining packet bytes.`);
+		}
 
 		this.payload = this.payload.slice(this.commandLength - 12);
 	}
@@ -37,6 +49,10 @@ class PhotonCommand {
 
 		switch (this.commandType) {
 			case 7:
+				if (this.payload.length - this.payload.tell() < 4) {
+					throw new Error('Photon unreliable command is truncated.');
+				}
+
 				this.payload.seek(this.payload.tell() + 4);
 				this.payload = this.payload.slice(this.payload.length - this.payload.tell());
 				this.parseReliableCommand();
@@ -93,6 +109,10 @@ class PhotonCommand {
 	}
 
 	parseProtocol16(buffer) {
+		if (!buffer || buffer.length < 2) {
+			return;
+		}
+
 		const payload = new BufferCursor(buffer);
 
 		payload.seek(payload.tell() + 1);
@@ -116,12 +136,25 @@ class PhotonCommand {
 	}
 
 	parseReliableFragmentCommand() {
+		if (this.payload.length - this.payload.tell() < 20) {
+			throw new Error('Photon fragment command is truncated.');
+		}
+
 		const startSequenceNumber = this.payload.readUInt32BE();
 		const fragmentCount = this.payload.readUInt32BE();
 		const fragmentNumber = this.payload.readUInt32BE();
 		const totalLength = this.payload.readUInt32BE();
 		const fragmentOffset = this.payload.readUInt32BE();
 		const data = this.payload.slice(this.payload.length - this.payload.tell()).buffer;
+
+		if (fragmentCount <= 0 || fragmentNumber >= fragmentCount || totalLength <= 0 || fragmentOffset > totalLength) {
+			throw new Error('Photon fragment command has invalid metadata.');
+		}
+
+		if (fragmentOffset + data.length > totalLength) {
+			throw new Error('Photon fragment data exceeds total fragment length.');
+		}
+
 		const assembled = this.parent.parent.addFragment({
 			channelId: this.channelId,
 			startSequenceNumber,

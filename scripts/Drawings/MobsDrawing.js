@@ -5,6 +5,23 @@ export class MobsDrawing extends DrawingUtils
         super(Settings);
     }
 
+    getLivingResourceImageName(mob)
+    {
+        const rawName = typeof mob.name === "string" ? mob.name.toLowerCase() : "";
+        const resourceName = rawName === "logs" || rawName === "log" || rawName === "wood" ? "Logs" : rawName;
+        const parsedEnchantmentLevel = Number.isInteger(mob.enchantmentLevel)
+            ? mob.enchantmentLevel
+            : parseInt(mob.enchantmentLevel, 10);
+        const enchantmentLevel = Number.isInteger(parsedEnchantmentLevel) && parsedEnchantmentLevel >= 0 && parsedEnchantmentLevel <= 4
+            ? parsedEnchantmentLevel
+            : 0;
+
+        if (!resourceName)
+            return undefined;
+
+        return resourceName + "_" + mob.tier + "_" + enchantmentLevel;
+    }
+
     interpolate(mobs, mists, lpX, lpY, t)
     {
         for (const mobOne of mobs)
@@ -54,10 +71,10 @@ export class MobsDrawing extends DrawingUtils
 
             if (mobOne.type == EnemyType.LivingSkinnable || mobOne.type == EnemyType.LivingHarvestable)
             {
-                imageName = mobOne.name + "_" + mobOne.tier + "_" + mobOne.enchantmentLevel;
+                imageName = this.getLivingResourceImageName(mobOne);
                 imageFolder = "Resources"; // Change folder to living harvestables
 
-                drawHp = this.settings.livingResourcesHp;
+                drawHp = this.settings.livingResourcesHP;
                 drawId = this.settings.livingResourcesID;
             }
             else if (mobOne.type >= EnemyType.Enemy && mobOne.type <= EnemyType.Boss)

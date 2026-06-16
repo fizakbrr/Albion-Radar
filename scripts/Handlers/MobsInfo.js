@@ -199,7 +199,7 @@ class MobsInfo{
         this.addItem(528, 4, EnemyType.LivingHarvestable, "rock");
         this.addItem(529, 5, EnemyType.LivingHarvestable, "rock");
         this.addItem(530, 6, EnemyType.LivingHarvestable, "rock");
-        this.addItem(533, 7, EnemyType.LivingHarvestable, "rock");
+        this.addItem(531, 7, EnemyType.LivingHarvestable, "rock");
         this.addItem(532, 8, EnemyType.LivingHarvestable, "rock");
         // Elite Roads <=> Tx_MOB_CRITTER_ROCK_ROADS_ELITE +25
         this.addItem(533, 4, EnemyType.LivingHarvestable, "rock");

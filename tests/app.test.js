@@ -194,3 +194,30 @@ test('Photon parser emits Protocol18 events with the existing event shape', asyn
   assert.equal(event.parameters[0], 42);
   assert.equal(event.parameters[252], EventCodes.EventCodes.Leave);
 });
+
+test('Photon parser ignores malformed UDP payloads without throwing', () => {
+  const manager = new PhotonPacketParser();
+  let packetCount = 0;
+
+  manager.on('packet', () => {
+    packetCount++;
+  });
+
+  assert.equal(manager.handle(Buffer.from([0x01, 0x02, 0x03])), false);
+  assert.equal(manager.handle(Buffer.alloc(400, 0xff)), false);
+  assert.equal(packetCount, 0);
+});
+
+test('Photon parser ignores commands with invalid declared lengths', () => {
+  const manager = new PhotonPacketParser();
+  const command = Buffer.alloc(12);
+  command.writeUInt8(6, 0);
+  command.writeUInt32BE(0xffff, 4);
+
+  const header = Buffer.alloc(12);
+  header.writeUInt16BE(0, 0);
+  header.writeUInt8(0, 2);
+  header.writeUInt8(1, 3);
+
+  assert.equal(manager.handle(Buffer.concat([header, command])), false);
+});

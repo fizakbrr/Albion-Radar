@@ -8,10 +8,29 @@ class PhotonPacketParser extends EventEmitter {
 	}
 
 	handle(buff) {
-		this.emit('packet', new PhotonPacket(this, buff));
+		let packet;
+
+		try {
+			packet = new PhotonPacket(this, buff);
+		} catch {
+			return false;
+		}
+
+		this.emit('packet', packet);
+		return true;
 	}
 
 	addFragment(fragment) {
+		if (
+			fragment.totalLength <= 0 ||
+			fragment.fragmentCount <= 0 ||
+			fragment.fragmentNumber >= fragment.fragmentCount ||
+			fragment.fragmentOffset > fragment.totalLength ||
+			fragment.fragmentOffset + fragment.data.length > fragment.totalLength
+		) {
+			return null;
+		}
+
 		const key = `${fragment.channelId}:${fragment.startSequenceNumber}`;
 		let pending = this.fragments.get(key);
 

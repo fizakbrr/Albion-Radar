@@ -78,6 +78,62 @@ class MobsHandler
         this.mobinfo = newData;
     }
 
+    normalizeLivingResourceName(name)
+    {
+        if (typeof name !== "string")
+            return "";
+
+        switch (name.toLowerCase())
+        {
+            case "logs":
+            case "log":
+            case "wood":
+                return "wood";
+            case "fiber":
+            case "hide":
+            case "ore":
+            case "rock":
+                return name.toLowerCase();
+            default:
+                return "";
+        }
+    }
+
+    getLivingResourceSettings(name)
+    {
+        switch (this.normalizeLivingResourceName(name))
+        {
+            case "fiber":
+                return this.settings.harvestingLivingFiber;
+            case "hide":
+                return this.settings.harvestingLivingHide;
+            case "wood":
+                return this.settings.harvestingLivingWood;
+            case "ore":
+                return this.settings.harvestingLivingOre;
+            case "rock":
+                return this.settings.harvestingLivingRock;
+            default:
+                return null;
+        }
+    }
+
+    isLivingResourceEnabled(type, name, tier, enchantmentLevel)
+    {
+        const enchant = Number.isInteger(enchantmentLevel) ? enchantmentLevel : parseInt(enchantmentLevel, 10);
+        const enchantKey = `e${Number.isInteger(enchant) && enchant >= 0 && enchant <= 4 ? enchant : 0}`;
+        const tierIndex = tier - 1;
+
+        if (tierIndex < 0 || tierIndex >= 8)
+            return false;
+
+        const resourceSettings = type == EnemyType.LivingSkinnable
+            ? this.settings.harvestingLivingHide
+            : this.getLivingResourceSettings(name);
+
+        return !!(resourceSettings && resourceSettings[enchantKey] && resourceSettings[enchantKey][tierIndex]);
+    }
+
     NewMobEvent(parameters)
     {
         const id = parseInt(parameters[0]); // entity id
@@ -168,7 +224,7 @@ class MobsHandler
             h.type = mobsInfo[1];
             h.name = mobsInfo[2];
 
-            if (h.type == EnemyType.LivingSkinnable)
+            if (h.type == EnemyType.LivingSkinnable || h.type == EnemyType.LivingHarvestable)
             {
                 /* 
                    If animal is enchanted, it'll probably never work and jump into this return
@@ -179,47 +235,7 @@ class MobsHandler
                 */
                    //console.log(parameters);
                 
-                if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier-1])
-                {
-                    this.harvestablesNotGood.push(h);
-                    return;
-                }
-
-                
-            }
-            else if (h.type == EnemyType.LivingHarvestable)
-            {
-                /* 
-                   Same as animals comment before
-                */
-                let iG = true;
-
-                switch (h.name) {
-                    case "fiber":
-                        if (!this.settings.harvestingLivingFiber[`e${enchant}`][h.tier-1]) iG = false;
-                        break;
-
-                    case "hide":
-                        if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier-1]) iG = false;
-                        break;
-
-                    case "Logs":
-                        if (!this.settings.harvestingLivingWood[`e${enchant}`][h.tier-1]) iG = false;
-                        break;
-
-                    case "ore":
-                        if (!this.settings.harvestingLivingOre[`e${enchant}`][h.tier-1]) iG = false;
-                        break;
-                    
-                    case "rock":
-                        if (!this.settings.harvestingLivingRock[`e${enchant}`][h.tier-1]) iG = false;
-                        break;
-                
-                    default:
-                        break;
-                }
-
-                if (!iG)
+                if (!this.isLivingResourceEnabled(h.type, h.name, h.tier, enchant))
                 {
                     this.harvestablesNotGood.push(h);
                     return;
@@ -326,59 +342,10 @@ class MobsHandler
 
         enemy.enchantmentLevel = enchantmentLevel;
 
-        let hasToSwapFromList = false;
-
-        if (enemy.type == EnemyType.LivingSkinnable)
+        if (!this.isLivingResourceEnabled(enemy.type, enemy.name, enemy.tier, enemy.enchantmentLevel))
         {
-            if (!this.settings.harvestingLivingHide[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                return;
-
-            hasToSwapFromList = true;
+            return;
         }
-        else if (enemy.type == EnemyType.LivingHarvestable)
-        {
-            switch (enemy.name) {
-                case "fiber":
-                    if (!this.settings.harvestingLivingFiber[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                        return;
-
-                    hasToSwapFromList = true;
-                    break;
-
-                case "hide":
-                    if (!this.settings.harvestingLivingHide[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                        return;
-
-                    hasToSwapFromList = true;
-                    break;
-
-                case "Logs":
-                    if (!this.settings.harvestingLivingWood[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                        return;
-
-                    hasToSwapFromList = true;
-                    break;
-
-                case "ore":
-                    if (!this.settings.harvestingLivingOre[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                        return;
-
-                    hasToSwapFromList = true;
-                    break;
-                
-                case "rock":
-                    if (!this.settings.harvestingLivingRock[`e${enemy.enchantmentLevel}`][enemy.tier-1])
-                        return;
-
-                    hasToSwapFromList = true;
-                    break;
-            
-                default:
-                    break;
-            }
-        }
-
-        if (!hasToSwapFromList) return;
 
         this.mobsList.push(enemy);
         this.harvestablesNotGood = this.harvestablesNotGood.filter((x) => x.id !== enemy.id);
