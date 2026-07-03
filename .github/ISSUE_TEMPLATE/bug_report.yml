@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a problem with the Albion Radar (Camel Radar)
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Camel Radar. Please fill out the details below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: The radar page opens but stays empty when...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run start.bat as administrator
+        2. Select adapter ...
+        3. Open http://localhost:5001
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11 23H2
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: 20.20.2
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console / terminal output
+      description: Paste any errors from the black window or the browser console.
+      render: shell

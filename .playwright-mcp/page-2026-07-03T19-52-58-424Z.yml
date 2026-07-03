@@ -1,0 +1,134 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - button "Camel Radar logo Camel Radar local capture UI" [ref=e7] [cursor=pointer]:
+        - img "Camel Radar logo" [ref=e8]
+        - generic [ref=e9]:
+          - generic [ref=e10]: Camel Radar
+          - generic [ref=e11]: local capture UI
+      - navigation [ref=e15]:
+        - button "PvP & Players Detection and alerts" [ref=e16] [cursor=pointer]:
+          - img
+          - generic [ref=e17]:
+            - generic [ref=e18]: PvP & Players
+            - generic [ref=e19]: Detection and alerts
+        - button "Resources Tiers and overlays" [ref=e20] [cursor=pointer]:
+          - img
+          - generic [ref=e21]:
+            - generic [ref=e22]: Resources
+            - generic [ref=e23]: Tiers and overlays
+        - button "Enemies Mobs and thresholds" [ref=e24] [cursor=pointer]:
+          - img
+          - generic [ref=e25]:
+            - generic [ref=e26]: Enemies
+            - generic [ref=e27]: Mobs and thresholds
+        - button "Other Signals Chests, mists, cages" [ref=e28] [cursor=pointer]:
+          - img
+          - generic [ref=e29]:
+            - generic [ref=e30]: Other Signals
+            - generic [ref=e31]: Chests, mists, cages
+        - button "Map Background rendering" [ref=e32] [cursor=pointer]:
+          - img
+          - generic [ref=e33]:
+            - generic [ref=e34]: Map
+            - generic [ref=e35]: Background rendering
+        - button "Ignore List Hidden alert names" [ref=e36] [cursor=pointer]:
+          - img
+          - generic [ref=e37]:
+            - generic [ref=e38]: Ignore List
+            - generic [ref=e39]: Hidden alert names
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Live tools
+          - generic [ref=e43]: Open the canvas views in focused windows.
+        - generic [ref=e44]:
+          - button "Radar window" [ref=e45] [cursor=pointer]:
+            - img
+            - text: Radar window
+          - button "Items window" [ref=e46] [cursor=pointer]:
+            - img
+            - text: Items window
+      - alert [ref=e47]:
+        - img [ref=e48]
+        - generic [ref=e52]: Credits retained
+        - generic [ref=e53]: The README preserves former developer and upstream project attribution.
+  - generic [ref=e54]:
+    - banner [ref=e55]:
+      - generic [ref=e56]:
+        - generic [ref=e58]:
+          - paragraph [ref=e59]: Detection and alerts
+          - heading "PvP & Players" [level=1] [ref=e60]
+        - generic [ref=e61]:
+          - button "Toggle theme" [ref=e62] [cursor=pointer]:
+            - img
+          - button "Launch Radar" [ref=e63] [cursor=pointer]:
+            - img
+            - generic [ref=e64]: Launch Radar
+    - main [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - generic [ref=e69]: Player detection
+            - heading "Tune the radar before you launch." [level=2] [ref=e70]
+            - paragraph [ref=e71]: These controls update the same local settings used by the live canvas renderer. Defaults favor visible player dots and practical alert filters.
+          - button "Open items" [ref=e72] [cursor=pointer]:
+            - img
+            - text: Open items
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]: Display and alerts
+              - generic [ref=e77]: Choose what the radar draws and how it alerts you.
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - generic [ref=e81]: Radar range
+                  - paragraph [ref=e82]: Current canvas scale.
+                - combobox "Radar range" [ref=e83] [cursor=pointer]:
+                  - generic: Normal
+                  - img
+              - generic [ref=e84]:
+                - generic [ref=e85]:
+                  - generic [ref=e86]: Radar dots
+                  - paragraph [ref=e87]: Render detected players on the radar canvas.
+                - switch "Radar dots" [checked] [ref=e88] [cursor=pointer]
+              - generic [ref=e89]:
+                - generic [ref=e90]:
+                  - generic [ref=e91]: Items
+                  - paragraph [ref=e92]: Draw detected player equipment in the items window.
+                - switch "Items" [ref=e93] [cursor=pointer]
+              - generic [ref=e94]:
+                - generic [ref=e95]:
+                  - generic [ref=e96]: Item IDs
+                  - paragraph [ref=e97]: Show raw item identifiers beside equipment for debugging.
+                - switch "Item IDs" [ref=e98] [cursor=pointer]
+              - generic [ref=e99]:
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Screen flash
+                  - paragraph [ref=e102]: Flash the radar window when a player is detected.
+                - switch "Screen flash" [ref=e103] [cursor=pointer]
+              - generic [ref=e104]:
+                - generic [ref=e105]:
+                  - generic [ref=e106]: Sound
+                  - paragraph [ref=e107]: Play the local alert sound for player detection.
+                - switch "Sound" [ref=e108] [cursor=pointer]
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]: Player types
+              - generic [ref=e112]: Filter noisy detections without changing packet capture.
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - generic [ref=e116]: Passive players
+                  - paragraph [ref=e117]: Include blue or neutral nearby players.
+                - switch "Passive players" [checked] [ref=e118] [cursor=pointer]
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - generic [ref=e121]: Faction players
+                  - paragraph [ref=e122]: Include faction-flagged players.
+                - switch "Faction players" [checked] [ref=e123] [cursor=pointer]
+              - generic [ref=e124]:
+                - generic [ref=e125]:
+                  - generic [ref=e126]: Dangerous players
+                  - paragraph [ref=e127]: Include yellow, red, and black player flags.
+                - switch "Dangerous players" [checked] [ref=e128] [cursor=pointer]

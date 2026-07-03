@@ -1,7 +1,7 @@
 {
   "name": "camel-albion-radar",
   "version": "1.0.0",
-  "description": "Local Albion Online radar overlay and map utility with a React UI, Express/WebSocket runtime, and optional packet capture support.",
+  "description": "Camel Radar is a free, open-source Albion Online radar and map overlay. See nearby players, gathering resources, enemies, chests, dungeons, and mists in real time with passive local packet capture, a React UI, and an Express/WebSocket runtime.",
   "main": "dist-server/server/index.js",
   "scripts": {
     "build": "npm run build:client && npm run build:legacy && npm run build:server && npm run build:assets",
@@ -16,16 +16,20 @@
     "test": "npm run build && node --test dist-server/tests/app.test.js"
   },
   "keywords": [
-    "albion-online",
     "albion-radar",
     "albion-online-radar",
+    "albion-online",
     "albion-online-tools",
     "albion-online-utility",
     "albion-online-overlay",
+    "albion-gathering-radar",
+    "albion-player-radar",
     "albion-map-tool",
+    "radar",
     "game-utility",
     "desktop-utility",
     "open-source-game-tool",
+    "packet-capture",
     "typescript",
     "react",
     "vite",
@@ -39,12 +43,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fizakbrr/CamelRadar.git"
+    "url": "git+https://github.com/fizakbrr/Albion-Radar.git"
   },
   "bugs": {
-    "url": "https://github.com/fizakbrr/CamelRadar/issues"
+    "url": "https://github.com/fizakbrr/Albion-Radar/issues"
   },
-  "homepage": "https://github.com/fizakbrr/CamelRadar#readme",
+  "homepage": "https://github.com/fizakbrr/Albion-Radar#readme",
   "license": "ISC",
   "type": "commonjs",
   "engines": {

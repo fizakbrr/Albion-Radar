@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Setup help (no coding needed)
+    url: https://github.com/fizakbrr/Albion-Radar#getting-started-no-coding-needed
+    about: Read the step-by-step install guide before opening a setup issue.
+  - name: FAQ
+    url: https://github.com/fizakbrr/Albion-Radar#faq-albion-radar
+    about: Common questions about this Albion Online radar.
