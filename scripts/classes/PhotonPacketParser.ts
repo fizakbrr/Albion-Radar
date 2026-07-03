@@ -7,6 +7,10 @@ class PhotonPacketParser extends EventEmitter {
 	constructor() {
 		super();
 		this.fragments = new Map();
+		// ponytail: incomplete fragment sequences are evicted after this TTL so packet
+		// loss or malformed streams can't grow the map forever.
+		this.fragmentTtlMs = 10000;
+		this.maxFragmentTotalLength = 1048576;
 	}
 
 	handle(buff) {
@@ -23,8 +27,16 @@ class PhotonPacketParser extends EventEmitter {
 	}
 
 	addFragment(fragment) {
+		const now = Date.now();
+		for (const [key, pending] of this.fragments) {
+			if (now - pending.firstSeenAt > this.fragmentTtlMs) {
+				this.fragments.delete(key);
+			}
+		}
+
 		if (
 			fragment.totalLength <= 0 ||
+			fragment.totalLength > this.maxFragmentTotalLength ||
 			fragment.fragmentCount <= 0 ||
 			fragment.fragmentNumber >= fragment.fragmentCount ||
 			fragment.fragmentOffset > fragment.totalLength ||
@@ -42,6 +54,7 @@ class PhotonPacketParser extends EventEmitter {
 				receivedBytes: 0,
 				parts: new Set(),
 				buffer: Buffer.alloc(fragment.totalLength),
+				firstSeenAt: now,
 			};
 			this.fragments.set(key, pending);
 		}

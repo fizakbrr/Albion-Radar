@@ -10,8 +10,8 @@ export class MobsDrawing extends DrawingUtils
 
     getLivingResourceImageName(mob)
     {
-        const rawName = typeof mob.name === "string" ? mob.name.toLowerCase() : "";
-        const resourceName = rawName === "logs" || rawName === "log" || rawName === "wood" ? "Logs" : rawName;
+        const resourceName = this.getLivingResourceImagePrefix(mob);
+        const parsedTier = Number.isInteger(mob.tier) ? mob.tier : parseInt(mob.tier, 10);
         const parsedEnchantmentLevel = Number.isInteger(mob.enchantmentLevel)
             ? mob.enchantmentLevel
             : parseInt(mob.enchantmentLevel, 10);
@@ -19,10 +19,37 @@ export class MobsDrawing extends DrawingUtils
             ? parsedEnchantmentLevel
             : 0;
 
-        if (!resourceName)
+        if (!resourceName || !Number.isInteger(parsedTier) || parsedTier < 1 || parsedTier > 8)
             return undefined;
 
-        return resourceName + "_" + mob.tier + "_" + enchantmentLevel;
+        return resourceName + "_" + parsedTier + "_" + enchantmentLevel;
+    }
+
+    getLivingResourceImagePrefix(mob)
+    {
+        if (mob?.type == EnemyType.LivingSkinnable)
+            return "hide";
+
+        const rawName = typeof mob?.name === "string" ? mob.name.trim().toLowerCase() : "";
+
+        switch (rawName)
+        {
+            case "logs":
+            case "log":
+            case "wood":
+                return "Logs";
+            case "fiber":
+                return "fiber";
+            case "hide":
+                return "hide";
+            case "ore":
+                return "ore";
+            case "rock":
+            case "stone":
+                return "rock";
+            default:
+                return "";
+        }
     }
 
     interpolate(mobs, mists, lpX, lpY, t)

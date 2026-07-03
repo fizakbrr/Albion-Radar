@@ -1,8 +1,8 @@
 const { networkInterfaces } = require('os')
-const readlineSync = require('readline-sync');
+const readline = require('node:readline/promises');
 const fs = require('node:fs');
 
-const getAdapterIp = (options: any = {}) => {
+const getAdapterIp = async (options: any = {}) => {
     const ipFile = options.ipFile || 'ip.txt';
     const interfaces = networkInterfaces();
 
@@ -23,30 +23,35 @@ const getAdapterIp = (options: any = {}) => {
         i++;
     }
 
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     let selectedIp;
     let selectedName;
 
-    while (true)
-    {
-        console.log();
-        let userSelect = readlineSync.question('input the number here: ');
-        selectedIp = selection[userSelect];
-        selectedName = selectionName[userSelect];
-
-        if (selectedIp)
-            break;
-
-        console.clear();
-        console.log('Invalid input, try again');
-        console.log();
-
-        console.log();
-        console.log('Please select one of the adapter that you use to connect to the internet:');
-        
-        for (let j = 1; j < i; j++)
+    try {
+        while (true)
         {
-            console.log(`  ${j}. ${selectionName[j]}\t ip address: ${selection[j]}`);
+            console.log();
+            let userSelect = await rl.question('input the number here: ');
+            selectedIp = selection[userSelect];
+            selectedName = selectionName[userSelect];
+
+            if (selectedIp)
+                break;
+
+            console.clear();
+            console.log('Invalid input, try again');
+            console.log();
+
+            console.log();
+            console.log('Please select one of the adapter that you use to connect to the internet:');
+
+            for (let j = 1; j < i; j++)
+            {
+                console.log(`  ${j}. ${selectionName[j]}\t ip address: ${selection[j]}`);
+            }
         }
+    } finally {
+        rl.close();
     }
 
     console.log();

@@ -526,6 +526,13 @@ export class Settings
         this.dungeonHellgate = this.returnLocalBool("settingDungeonHellgate");
         //#endregion
 
-        this.ignoreList = JSON.parse(localStorage.getItem("ignoreList")) || [];
+        try
+        {
+            this.ignoreList = JSON.parse(localStorage.getItem("ignoreList")) || [];
+        }
+        catch
+        {
+            this.ignoreList = [];
+        }
     }
 }

@@ -1,4 +1,6 @@
-const HarvestableType = 
+import { canonicalResourceName, collectStringParameters } from './HandlerUtils.js';
+
+export const HarvestableType =
 {
     Fiber: 'Fiber',
     Hide: 'Hide',
@@ -11,10 +13,11 @@ class Harvestable
 {
     [key: string]: any;
 
-    constructor(id, type, tier, posX, posY, charges, size)
+    constructor(id, type, tier, posX, posY, charges, size, resourceType)
     {
         this.id = id;
         this.type = type;
+        this.resourceType = resourceType;
         this.tier = tier;
         this.posX = posX;
         this.posY = posY;
@@ -50,87 +53,164 @@ export class HarvestablesHandler
     {
         this.harvestableList = [];
         this.settings = settings;
+        this.livingResourceSource = null;
     }
 
-    addHarvestable(id, type, tier, posX, posY, charges, size)
+    setLivingResourceSource(livingResourceSource)
     {
-        switch (this.GetStringType(type))
+        this.livingResourceSource = livingResourceSource;
+    }
+
+    normalizeResourceType(resourceType)
+    {
+        const canonicalToHarvestable = {
+            fiber: HarvestableType.Fiber,
+            hide: HarvestableType.Hide,
+            wood: HarvestableType.Log,
+            ore: HarvestableType.Ore,
+            rock: HarvestableType.Rock,
+        };
+
+        return canonicalToHarvestable[canonicalResourceName(resourceType)] || "";
+    }
+
+    getStringParameters(value)
+    {
+        return collectStringParameters(value);
+    }
+
+    getResourceTypeFromName(name)
+    {
+        if (typeof name !== "string")
+            return "";
+
+        const tokens = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
+        const hasToken = (token) => tokens.includes(token);
+
+        if (hasToken("HIDE") || hasToken("SKIN") || hasToken("SKINNABLE") || hasToken("LEATHER"))
+            return HarvestableType.Hide;
+
+        if (hasToken("ORE") || hasToken("METAL"))
+            return HarvestableType.Ore;
+
+        if (hasToken("ROCK") || hasToken("STONE"))
+            return HarvestableType.Rock;
+
+        if (hasToken("FIBER"))
+            return HarvestableType.Fiber;
+
+        if (hasToken("WOOD") || hasToken("LOG") || hasToken("LOGS") || hasToken("TREE"))
+            return HarvestableType.Log;
+
+        return "";
+    }
+
+    getResourceTypeFromParameters(parameters)
+    {
+        for (const name of this.getStringParameters(parameters))
+        {
+            const resourceType = this.getResourceTypeFromName(name);
+
+            if (resourceType)
+                return resourceType;
+        }
+
+        return "";
+    }
+
+    getResourceTypeFromLivingResource(livingResource)
+    {
+        if (!livingResource)
+            return "";
+
+        if (livingResource.type == 1)
+            return HarvestableType.Hide;
+
+        return this.normalizeResourceType(livingResource.name);
+    }
+
+    getLinkedLivingResource(id, posX, posY)
+    {
+        if (!this.livingResourceSource || typeof this.livingResourceSource.getLinkedLivingResource !== "function")
+            return null;
+
+        return this.livingResourceSource.getLinkedLivingResource(id, posX, posY);
+    }
+
+    resolveResourceType(typeNumber, resourceOverride = "")
+    {
+        return this.normalizeResourceType(resourceOverride) || this.GetStringType(typeNumber);
+    }
+
+    getStaticResourceSettings(resourceType)
+    {
+        switch (resourceType)
         {
             case HarvestableType.Fiber:
-                if (!this.settings.harvestingStaticFiber[`e${charges}`][tier-1]) return;
-                break;
-
+                return this.settings.harvestingStaticFiber;
             case HarvestableType.Hide:
-                if (!this.settings.harvestingStaticHide[`e${charges}`][tier-1]) return;
-                break;
-
+                return this.settings.harvestingStaticHide;
             case HarvestableType.Log:
-                if (!this.settings.harvestingStaticWood[`e${charges}`][tier-1]) return;
-                break;
-
+                return this.settings.harvestingStaticWood;
             case HarvestableType.Ore:
-                if (!this.settings.harvestingStaticOre[`e${charges}`][tier-1]) return;
-                break;
-
+                return this.settings.harvestingStaticOre;
             case HarvestableType.Rock:
-                if (!this.settings.harvestingStaticRock[`e${charges}`][tier-1]) return;
-                break;
-
+                return this.settings.harvestingStaticRock;
             default:
-                return;
+                return null;
         }
+    }
+
+    isStaticResourceEnabled(resourceType, tier, charges)
+    {
+        const parsedTier = Number.isInteger(tier) ? tier : parseInt(tier, 10);
+        const parsedCharges = Number.isInteger(charges) ? charges : parseInt(charges, 10);
+        const enchant = Number.isInteger(parsedCharges) && parsedCharges >= 0 && parsedCharges <= 4 ? parsedCharges : 0;
+        const tierIndex = parsedTier - 1;
+        const resourceSettings = this.getStaticResourceSettings(resourceType);
+
+        return !!(resourceSettings && tierIndex >= 0 && tierIndex < 8 && resourceSettings[`e${enchant}`]?.[tierIndex]);
+    }
+
+    addHarvestable(id, type, tier, posX, posY, charges, size, resourceOverride = "")
+    {
+        const resourceType = this.resolveResourceType(type, resourceOverride);
+
+        if (!this.isStaticResourceEnabled(resourceType, tier, charges))
+            return;
 
         
         var harvestable = this.harvestableList.find((item) => item.id === id);
 
         if (!harvestable)
         {
-            const h = new Harvestable(id, type, tier, posX, posY, charges, size);
+            const h = new Harvestable(id, type, tier, posX, posY, charges, size, resourceType);
             this.harvestableList.push(h);
             //console.log("New Harvestable: " + h.toString());
         } 
         else // update
         {
+            harvestable.resourceType = resourceType;
             harvestable.setCharges(charges);
         }
     }
 
-    UpdateHarvestable(id, type, tier, posX, posY, charges, size)
+    UpdateHarvestable(id, type, tier, posX, posY, charges, size, resourceOverride = "")
     {
-        switch (this.GetStringType(type))
-        {
-            case HarvestableType.Fiber:
-                if (!this.settings.harvestingStaticFiber[`e${charges}`][tier-1]) return;
-                break;
+        const resourceType = this.resolveResourceType(type, resourceOverride);
 
-            case HarvestableType.Hide:
-                if (!this.settings.harvestingStaticHide[`e${charges}`][tier-1]) return;
-                break;
-
-            case HarvestableType.Log:
-                if (!this.settings.harvestingStaticWood[`e${charges}`][tier-1]) return;
-                break;
-
-            case HarvestableType.Ore:
-                if (!this.settings.harvestingStaticOre[`e${charges}`][tier-1]) return;
-                break;
-
-            case HarvestableType.Rock:
-                if (!this.settings.harvestingStaticRock[`e${charges}`][tier-1]) return;
-                break;
-
-            default:
-                return;
-        }
+        if (!this.isStaticResourceEnabled(resourceType, tier, charges))
+            return;
 
         var harvestable = this.harvestableList.find((item) => item.id === id);
 
         if (!harvestable)
         {
-            this.addHarvestable(id, type, tier, posX, posY, charges, size);
+            this.addHarvestable(id, type, tier, posX, posY, charges, size, resourceType);
             return;
         }
 
+        harvestable.resourceType = resourceType;
         harvestable.charges = charges;
         harvestable.size = size;
     }
@@ -175,7 +255,11 @@ export class HarvestablesHandler
         if (!Array.isArray(location) || location.length < 2)
             return;
 
-        this.UpdateHarvestable(id, type, tier, location[0], location[1], enchant, size);
+        const linkedLivingResource = this.getLinkedLivingResource(id, location[0], location[1]);
+        const resourceOverride = this.getResourceTypeFromParameters(Parameters)
+            || this.getResourceTypeFromLivingResource(linkedLivingResource);
+
+        this.UpdateHarvestable(id, type, tier, location[0], location[1], enchant, size, resourceOverride);
     }
 
     base64ToArrayBuffer(base64)
@@ -213,7 +297,8 @@ export class HarvestablesHandler
             const posY = a3[i * 2 + 1];
             const count = a4[i];
 
-            this.addHarvestable(id, type, tier, posX, posY, 0, count);
+            const resourceOverride = this.getResourceTypeFromParameters([id, type, tier, posX, posY]);
+            this.addHarvestable(id, type, tier, posX, posY, 0, count, resourceOverride);
         }
     }
 
@@ -265,11 +350,11 @@ export class HarvestablesHandler
         {
             return HarvestableType.Rock;
         }
-        else if (typeNumber >= 11 && typeNumber <= 15)
+        else if (typeNumber >= 11 && typeNumber <= 14)
         {
             return HarvestableType.Fiber;
         }
-        else if (typeNumber >= 16 && typeNumber <= 22)
+        else if (typeNumber >= 15 && typeNumber <= 22)
         {
             return HarvestableType.Hide;
         }

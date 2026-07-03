@@ -524,8 +524,6 @@ export const EventCodes =
 	MistsCityRoadsEntrancePartyStateUpdate : 522,
 	MistsCityRoadsEntranceClearStateForParty : 523,
 	MistsEntranceDataChanged : 524,
-	NewCagedObject : 525,
-	CagedObjectStateUpdated : 526,
 	NewMistsCagedWisp : 525,
 	MistsWispCageOpened : 526,
 	EntrancePartyBindingCreated : 527,

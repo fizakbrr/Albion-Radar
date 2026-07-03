@@ -6,7 +6,7 @@ const express = require('express');
 const WebSocket = require('ws');
 
 const PhotonParser = require('../scripts/classes/PhotonPacketParser');
-const EventCodes = require('../scripts/Utils/EventCodesApp.js');
+const EventCodes = require('../scripts/Utils/EventCodes');
 
 const DEFAULT_HTTP_PORT = 5001;
 const DEFAULT_WS_PORT = 5002;
@@ -215,7 +215,7 @@ function readCachedAdapterIp(rootDir) {
   return adapterIp || undefined;
 }
 
-function selectAdapterIp(rootDir, providedIp, options: any = {}) {
+async function selectAdapterIp(rootDir, providedIp, options: any = {}) {
   if (providedIp) return providedIp;
 
   const cachedIp = options.ignoreCache ? undefined : readCachedAdapterIp(rootDir);
@@ -231,7 +231,7 @@ function selectAdapterIp(rootDir, providedIp, options: any = {}) {
   return getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
 }
 
-function startPacketCapture(manager, options: any = {}) {
+async function startPacketCapture(manager, options: any = {}) {
   const rootDir = options.rootDir || resolveProjectRoot();
   const adapterIpFromEnv = readOptionOrEnv(
     options.adapterIp,
@@ -258,7 +258,7 @@ function startPacketCapture(manager, options: any = {}) {
 
   if (!adapterIp && allowAdapterPrompt) {
     const { getAdapterIp } = require('./adapter-selector');
-    adapterIp = getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
+    adapterIp = await getAdapterIp({ ipFile: path.join(rootDir, 'ip.txt') });
   }
 
   if (!adapterIp) {
@@ -272,7 +272,7 @@ function startPacketCapture(manager, options: any = {}) {
     console.log();
     console.log('Last adapter is not working, please choose a new one.');
     console.log();
-    adapterIp = selectAdapterIp(rootDir, undefined, { ignoreCache: true });
+    adapterIp = await selectAdapterIp(rootDir, undefined, { ignoreCache: true });
     device = Cap.findDevice(adapterIp);
   }
 
@@ -396,18 +396,18 @@ async function start(options: any = {}) {
   wsServer = createWebSocketServer(manager, { wsHost, wsPort });
   await waitForListening(wsServer);
 
-  const httpServer = app.listen(port);
+  const httpServer = app.listen(port, wsHost);
   await waitForListening(httpServer);
 
   const httpAddress = httpServer.address();
   const resolvedPort = httpAddress && typeof httpAddress === 'object' ? httpAddress.port : port;
-  const url = `http://localhost:${resolvedPort}`;
+  const url = `http://${wsHost}:${resolvedPort}`;
 
   console.log(`Server is running on ${url}`);
   console.log(`WebSocket server is running on ws://${wsHost}:${wsServer.address().port}`);
 
   const capture = captureEnabled
-    ? startPacketCapture(manager, {
+    ? await startPacketCapture(manager, {
         rootDir,
         adapterIp: options.adapterIp,
         allowAdapterPrompt: options.allowAdapterPrompt,
@@ -440,6 +440,14 @@ async function start(options: any = {}) {
 }
 
 if (require.main === module) {
+  // ponytail: log-and-continue; a lost event beats a dead radar session.
+  process.on('uncaughtException', (error) => {
+    console.error('[fatal] Uncaught exception:', error);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('[fatal] Unhandled rejection:', reason);
+  });
+
   start().catch((error) => {
     console.error(error);
     process.exitCode = 1;

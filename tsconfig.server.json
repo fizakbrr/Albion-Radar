@@ -21,8 +21,14 @@
   },
   "include": [
     "server/**/*.ts",
+    "scripts/Drawings/HarvestablesDrawing.ts",
+    "scripts/Drawings/MobsDrawing.ts",
+    "scripts/Handlers/HandlerUtils.ts",
+    "scripts/Handlers/HarvestablesHandler.ts",
+    "scripts/Handlers/MobsHandler.ts",
+    "scripts/Utils/DrawingUtils.ts",
     "scripts/classes/**/*.ts",
-    "scripts/Utils/EventCodesApp.ts",
+    "scripts/Utils/EventCodes.ts",
     "tests/**/*.ts",
     "tools/**/*.ts"
   ]

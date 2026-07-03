@@ -1,3 +1,5 @@
+import { canonicalResourceName, collectStringParameters } from './HandlerUtils.js';
+
 export const EnemyType =
 {
     LivingHarvestable: 0,
@@ -75,8 +77,9 @@ export class MobsHandler
         this.mobinfo = {};
 
         this.harvestablesNotGood = [];
+        this.recentLivingResources = [];
 
-        const logEnemiesList = document.getElementById("logEnemiesList");
+        const logEnemiesList = (globalThis as any).document?.getElementById?.("logEnemiesList");
         if (logEnemiesList)
             logEnemiesList.addEventListener("click", () => console.log(this.mobsList));
     }
@@ -88,23 +91,7 @@ export class MobsHandler
 
     normalizeLivingResourceName(name)
     {
-        if (typeof name !== "string")
-            return "";
-
-        switch (name.toLowerCase())
-        {
-            case "logs":
-            case "log":
-            case "wood":
-                return "wood";
-            case "fiber":
-            case "hide":
-            case "ore":
-            case "rock":
-                return name.toLowerCase();
-            default:
-                return "";
-        }
+        return canonicalResourceName(name);
     }
 
     getLivingResourceSettings(name)
@@ -126,20 +113,361 @@ export class MobsHandler
         }
     }
 
-    isLivingResourceEnabled(type, name, tier, enchantmentLevel)
+    getStaticResourceSettings(name)
+    {
+        switch (this.normalizeLivingResourceName(name))
+        {
+            case "fiber":
+                return this.settings.harvestingStaticFiber;
+            case "hide":
+                return this.settings.harvestingStaticHide;
+            case "wood":
+                return this.settings.harvestingStaticWood;
+            case "ore":
+                return this.settings.harvestingStaticOre;
+            case "rock":
+                return this.settings.harvestingStaticRock;
+            default:
+                return null;
+        }
+    }
+
+    isLivingResource(mob)
+    {
+        return mob?.type == EnemyType.LivingSkinnable || mob?.type == EnemyType.LivingHarvestable;
+    }
+
+    normalizeEnchantmentLevel(enchantmentLevel)
     {
         const enchant = Number.isInteger(enchantmentLevel) ? enchantmentLevel : parseInt(enchantmentLevel, 10);
-        const enchantKey = `e${Number.isInteger(enchant) && enchant >= 0 && enchant <= 4 ? enchant : 0}`;
-        const tierIndex = tier - 1;
+
+        return Number.isInteger(enchant) && enchant >= 0 && enchant <= 4 ? enchant : 0;
+    }
+
+    isResourceFilterEnabled(resourceSettings, tier, enchantmentLevel)
+    {
+        const enchantKey = `e${this.normalizeEnchantmentLevel(enchantmentLevel)}`;
+        const parsedTier = Number.isInteger(tier) ? tier : parseInt(tier, 10);
+        const tierIndex = parsedTier - 1;
 
         if (tierIndex < 0 || tierIndex >= 8)
             return false;
 
+        return !!(resourceSettings && resourceSettings[enchantKey] && resourceSettings[enchantKey][tierIndex]);
+    }
+
+    isLivingResourceEnabled(type, name, tier, enchantmentLevel)
+    {
+        const resourceName = type == EnemyType.LivingSkinnable ? "hide" : name;
         const resourceSettings = type == EnemyType.LivingSkinnable
             ? this.settings.harvestingLivingHide
-            : this.getLivingResourceSettings(name);
+            : this.getLivingResourceSettings(resourceName);
+        const staticResourceSettings = this.getStaticResourceSettings(resourceName);
 
-        return !!(resourceSettings && resourceSettings[enchantKey] && resourceSettings[enchantKey][tierIndex]);
+        return this.isResourceFilterEnabled(resourceSettings, tier, enchantmentLevel)
+            || this.isResourceFilterEnabled(staticResourceSettings, tier, enchantmentLevel);
+    }
+
+    isMistPortalName(name)
+    {
+        if (typeof name !== "string")
+            return false;
+
+        const normalizedName = name.toLowerCase();
+
+        return normalizedName.includes("mist")
+            && (normalizedName.includes("solo")
+                || normalizedName.includes("duo")
+                || normalizedName.includes("portal")
+                || normalizedName.includes("entrance")
+                || normalizedName.includes("exit"));
+    }
+
+    getStringParameter(parameters, indexes)
+    {
+        for (const index of indexes)
+        {
+            const value = parameters[index];
+
+            if (typeof value === "string" && value.trim() !== "")
+                return value;
+        }
+
+        return null;
+    }
+
+    getStringParameters(value)
+    {
+        return collectStringParameters(value);
+    }
+
+    getLivingResourceInfoFromName(name)
+    {
+        if (typeof name !== "string")
+            return null;
+
+        const tokens = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
+        const compactName = tokens.join("");
+        const hasToken = (token) => tokens.includes(token);
+        const tierToken = tokens.find((token) => /^T[1-8]$/.test(token));
+        const tier = tierToken ? parseInt(tierToken.substring(1), 10) : undefined;
+
+        if (hasToken("FIBER"))
+            return { tier, type: EnemyType.LivingHarvestable, name: "fiber" };
+
+        if (hasToken("ORE") || hasToken("METAL"))
+            return { tier, type: EnemyType.LivingHarvestable, name: "ore" };
+
+        if (hasToken("ROCK") || hasToken("STONE"))
+            return { tier, type: EnemyType.LivingHarvestable, name: "rock" };
+
+        if (hasToken("WOOD") || hasToken("LOG") || hasToken("LOGS") || hasToken("TREE"))
+            return { tier, type: EnemyType.LivingHarvestable, name: "Logs" };
+
+        const skinnableResourceTokens = [
+            "ALLIGATOR",
+            "BASILISK",
+            "BEAR",
+            "BIGHORN",
+            "BISON",
+            "BOAR",
+            "COUGAR",
+            "DEER",
+            "DIREBEAR",
+            "DIREBOAR",
+            "DIREWOLF",
+            "DOE",
+            "DRAGON",
+            "DRAGONHAWK",
+            "HART",
+            "FOX",
+            "GIANTSNAKE",
+            "GIANTSTAG",
+            "HOUND",
+            "HYENA",
+            "IMPALA",
+            "MAMMOTH",
+            "MARABOU",
+            "MARMOT",
+            "MAULER",
+            "MISTCOUGAR",
+            "MISTHIDE",
+            "MOABIRD",
+            "MOOSE",
+            "MONITORLIZARD",
+            "OWL",
+            "RABBIT",
+            "RHINO",
+            "SALAMANDER",
+            "SABERTOOTH",
+            "SABRETOOTH",
+            "SNAKE",
+            "STAG",
+            "TERRORBIRD",
+            "TIGER",
+            "TOAD",
+            "WHITE",
+            "WOLF",
+            "WOLFHOUND",
+            "WOLPERTINGER",
+        ];
+        const skinnableResourceNames = [
+            "ADULTCOUGAR",
+            "ADULTSABERTOOTHTIGER",
+            "ADULTSABRETOOTHTIGER",
+            "ALPHAMISTCOUGAR",
+            "ALPHASABERTOOTHTIGER",
+            "ALPHASABRETOOTHTIGER",
+            "ANCIENTALPHAMISTCOUGAR",
+            "ANCIENTBASILISK",
+            "ANCIENTGIANTBASILISK",
+            "ANCIENTLARGEMISTCOUGAR",
+            "ANCIENTMAMMOTH",
+            "ANCIENTMISTCOUGAR",
+            "ANCIENTSMALLMISTCOUGAR",
+            "FEROCIOUSMISTHIDEMAULER",
+            "FOGLANDSDOE",
+            "FOGLANDSHART",
+            "GRANDFOGLANDSHART",
+            "GREATMYSTICOWL",
+            "HILLMARMOT",
+            "INSATIABLEWOLFHOUND",
+            "LARGEMISTCOUGAR",
+            "MAJESTICMYSTICOWL",
+            "MATURESABERTOOTHTIGER",
+            "MATURESABRETOOTHTIGER",
+            "MISTCOUGARRUNT",
+            "MISTHIDEMAULER",
+            "OLDALPHAMISTCOUGAR",
+            "OLDBASILISKASPECT",
+            "OLDGIANTBASILISKASPECT",
+            "OLDLARGEMISTCOUGAR",
+            "OLDMISTCOUGAR",
+            "OLDMISTCOUGARRUNT",
+            "OLDSMALLMISTCOUGAR",
+            "OLDWHITE",
+            "OLDWHITESASPECT",
+            "REGALDRAGONHAWK",
+            "SABERTOOTHTIGER",
+            "SABRETOOTHTIGER",
+            "SMALLMISTCOUGAR",
+            "SNOWRABBIT",
+        ];
+
+        if (hasToken("HIDE") || hasToken("SKIN") || hasToken("SKINNABLE") || hasToken("LEATHER"))
+            return { tier, type: EnemyType.LivingSkinnable, name: "hide" };
+
+        if (skinnableResourceTokens.some((token) => hasToken(token))
+            || skinnableResourceNames.some((animalName) => compactName.includes(animalName)))
+        {
+            return { tier, type: EnemyType.LivingSkinnable, name: "hide" };
+        }
+
+        return null;
+    }
+
+    getLivingResourceInfoFromNames(names)
+    {
+        for (const name of names)
+        {
+            const info = this.getLivingResourceInfoFromName(name);
+
+            if (info)
+                return info;
+        }
+
+        return null;
+    }
+
+    applyLivingResourceInfo(mob, info)
+    {
+        if (!info)
+            return false;
+
+        if (Number.isInteger(info.tier))
+            mob.tier = info.tier;
+
+        mob.type = info.type;
+        mob.name = info.name;
+
+        return true;
+    }
+
+    addHiddenLivingResource(mob)
+    {
+        if (!this.harvestablesNotGood.some((x) => x.id === mob.id))
+            this.harvestablesNotGood.push(mob);
+    }
+
+    getLivingResourceSnapshot(mob)
+    {
+        if (!this.isLivingResource(mob))
+            return null;
+
+        return {
+            id: mob.id,
+            typeId: mob.typeId,
+            posX: mob.posX,
+            posY: mob.posY,
+            tier: mob.tier,
+            type: mob.type,
+            name: mob.name,
+            enchantmentLevel: mob.enchantmentLevel,
+            rememberedAt: Date.now(),
+        };
+    }
+
+    rememberLivingResource(mob)
+    {
+        const snapshot = this.getLivingResourceSnapshot(mob);
+
+        if (!snapshot)
+            return;
+
+        this.recentLivingResources = this.recentLivingResources.filter((entry) => entry.id !== snapshot.id);
+        this.recentLivingResources.push(snapshot);
+
+        const cutoff = Date.now() - 30000;
+        this.recentLivingResources = this.recentLivingResources
+            .filter((entry) => entry.rememberedAt >= cutoff)
+            .slice(-80);
+    }
+
+    getLinkedLivingResource(id, posX = undefined, posY = undefined)
+    {
+        const active = [...this.mobsList, ...this.harvestablesNotGood];
+        const byId = active.find((mob) => mob.id == id && this.isLivingResource(mob));
+
+        if (byId)
+            return this.getLivingResourceSnapshot(byId);
+
+        const recentById = this.recentLivingResources.find((mob) => mob.id == id);
+
+        if (recentById)
+            return recentById;
+
+        if (!Number.isFinite(posX) || !Number.isFinite(posY))
+            return null;
+
+        const maxDistance = 4;
+        let nearest = null;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+        const now = Date.now();
+
+        for (const mob of this.recentLivingResources)
+        {
+            if (now - mob.rememberedAt > 30000)
+                continue;
+
+            const distance = Math.sqrt((mob.posX - posX) ** 2 + (mob.posY - posY) ** 2);
+
+            if (distance <= maxDistance && distance < nearestDistance)
+            {
+                nearest = mob;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearest;
+    }
+
+    getRecentLivingResources()
+    {
+        return this.recentLivingResources.map((entry) => ({ ...entry }));
+    }
+
+    refreshLivingResources()
+    {
+        const visibleMobs = [];
+
+        for (const mob of this.mobsList)
+        {
+            if (this.isLivingResource(mob) && !this.isLivingResourceEnabled(mob.type, mob.name, mob.tier, mob.enchantmentLevel))
+            {
+                this.addHiddenLivingResource(mob);
+                continue;
+            }
+
+            visibleMobs.push(mob);
+        }
+
+        this.mobsList = visibleMobs;
+
+        const hiddenMobs = [];
+        for (const mob of this.harvestablesNotGood)
+        {
+            if (this.isLivingResourceEnabled(mob.type, mob.name, mob.tier, mob.enchantmentLevel))
+            {
+                if (!this.mobsList.some((x) => x.id === mob.id))
+                    this.mobsList.push(mob);
+            }
+            else
+            {
+                hiddenMobs.push(mob);
+            }
+        }
+
+        this.harvestablesNotGood = hiddenMobs;
     }
 
     NewMobEvent(parameters)
@@ -154,65 +482,30 @@ export class MobsHandler
         let posX = loc[0];
         let posY = loc[1];
 
-        let exp = 0
-        try
-        {
-            exp = parseFloat(parameters[13]);
-        }
-        catch (error)
-        {
-            exp = 0;
-        }
+        const parsedExp = parseFloat(parameters[13]);
+        const exp = Number.isFinite(parsedExp) ? parsedExp : 0;
 
-        let name = null;
-        try
-        {
-            name = parameters[32];
-        }
-        catch (error)
-        {
-            try
-            {
-                name = parameters[31];
-            }
-            catch (error2)
-            {
-                name = null;
-            }
-        }
+        const stringParameters = this.getStringParameters(parameters);
+        const name = this.getStringParameter(parameters, [32, 31]) || stringParameters[0];
+        const mistName = stringParameters.find((value) => this.isMistPortalName(value));
 
-        let enchant = 0;
-        try
-        {
-            enchant = parameters[33];
-        }
-        catch (error)
-        {
-            enchant = 0;
-        }
+        const enchant = parameters[33] ?? 0;
 
-        let rarity = 1;
-        try
-        {
-            rarity = parseInt(parameters[19]);
-        }
-        catch (error)
-        {
-            rarity = 1;
-        }
+        const parsedRarity = parseInt(parameters[19]);
+        const rarity = Number.isFinite(parsedRarity) ? parsedRarity : 1;
 
-        if (name != null)
+        if (this.mobinfo[typeId] == null && mistName)
         {
-            this.AddMist(id, posX, posY, name, enchant);
+            this.AddMist(id, posX, posY, mistName, enchant);
         }
         else
         {
-            this.AddEnemy(id, typeId, posX, posY, exp, enchant, rarity, parameters);
+            this.AddEnemy(id, typeId, posX, posY, exp, enchant, rarity, parameters, stringParameters);
         }
     }
     
 
-    AddEnemy(id, typeId, posX, posY, health, enchant, rarity, parameters)
+    AddEnemy(id, typeId, posX, posY, health, enchant, rarity, parameters, packetNames = [])
     {
         if (this.mobsList.some(mob => mob.id === id))
             return;
@@ -221,6 +514,7 @@ export class MobsHandler
             return;
 
         const h = new Mob(id, typeId, posX, posY, health, enchant, rarity);
+        const livingInfoFromPacketName = this.getLivingResourceInfoFromNames(packetNames);
 
         // Known enemy and living-resource ids from MobsInfo.
         if (this.mobinfo[typeId] != null) 
@@ -230,6 +524,9 @@ export class MobsHandler
             h.tier = mobsInfo[0];
             h.type = mobsInfo[1];
             h.name = mobsInfo[2];
+
+            if (livingInfoFromPacketName)
+                this.applyLivingResourceInfo(h, livingInfoFromPacketName);
 
             if (h.type == EnemyType.LivingSkinnable || h.type == EnemyType.LivingHarvestable)
             {
@@ -244,7 +541,7 @@ export class MobsHandler
                 
                 if (!this.isLivingResourceEnabled(h.type, h.name, h.tier, enchant))
                 {
-                    this.harvestablesNotGood.push(h);
+                    this.addHiddenLivingResource(h);
                     return;
                 }
             }
@@ -266,7 +563,7 @@ export class MobsHandler
             else if (h.type == EnemyType.MistBoss)
             {
                 if (h.name == "CRYSTALSPIDER" && !this.settings.bossCrystalSpider) return;
-                else if (h.name == "FAIRYDRAGON" && !this.settings.settingBossFairyDragon) return;
+                else if (h.name == "FAIRYDRAGON" && !this.settings.bossFairyDragon) return;
                 else if (h.name == "VEILWEAVER" && !this.settings.bossVeilWeaver) return;
                 else if (h.name == "GRIFFIN" && !this.settings.bossGriffin) return;
             }
@@ -285,6 +582,16 @@ export class MobsHandler
             
         }
         // Unmanaged id
+        else if (livingInfoFromPacketName)
+        {
+            this.applyLivingResourceInfo(h, livingInfoFromPacketName);
+
+            if (!this.isLivingResourceEnabled(h.type, h.name, h.tier, enchant))
+            {
+                this.addHiddenLivingResource(h);
+                return;
+            }
+        }
         else if (!this.settings.showUnmanagedEnemies) return;
         else
         {
@@ -298,11 +605,20 @@ export class MobsHandler
     removeMob(id)
     {
         const pSize = this.mobsList.length;
+        const visibleMob = this.mobsList.find((x) => x.id == id);
+
+        if (visibleMob)
+            this.rememberLivingResource(visibleMob);
 
         this.mobsList = this.mobsList.filter((x) => x.id !== id);
 
         // That means we already removed the enemy, so it can't be in the other list
         if (this.mobsList.length < pSize) return;
+
+        const hiddenMob = this.harvestablesNotGood.find((x) => x.id == id);
+
+        if (hiddenMob)
+            this.rememberLivingResource(hiddenMob);
 
         this.harvestablesNotGood = this.harvestablesNotGood.filter((x) => x.id !== id);
     }
@@ -319,19 +635,18 @@ export class MobsHandler
             return;
         }
 
-        // We don't need to update mobs we don't show yet
-        /*enemy = this.harvestablesNotGood.find((enemy) => enemy.id === id);
+        enemy = this.harvestablesNotGood.find((enemy) => enemy.id === id);
 
         if (!enemy) return;
 
         enemy.posX = posX;
-        enemy.posY = posY;*/
+        enemy.posY = posY;
     }
 
     updateEnchantEvent(parameters)
     {
         const mobId = parameters[0];
-        const enchantmentLevel = parameters[1];
+        const enchantmentLevel = this.normalizeEnchantmentLevel(parameters[1]);
 
         // Check in this list for the harvestables & skinnables with the id
         var enemy = this.mobsList.find((mob) => mob.id == mobId);
@@ -339,6 +654,13 @@ export class MobsHandler
         if (enemy)
         {
             enemy.enchantmentLevel = enchantmentLevel;
+
+            if (this.isLivingResource(enemy) && !this.isLivingResourceEnabled(enemy.type, enemy.name, enemy.tier, enemy.enchantmentLevel))
+            {
+                this.mobsList = this.mobsList.filter((x) => x.id !== enemy.id);
+                this.addHiddenLivingResource(enemy);
+            }
+
             return;
         }
 
@@ -350,9 +672,7 @@ export class MobsHandler
         enemy.enchantmentLevel = enchantmentLevel;
 
         if (!this.isLivingResourceEnabled(enemy.type, enemy.name, enemy.tier, enemy.enchantmentLevel))
-        {
             return;
-        }
 
         this.mobsList.push(enemy);
         this.harvestablesNotGood = this.harvestablesNotGood.filter((x) => x.id !== enemy.id);
@@ -403,5 +723,6 @@ export class MobsHandler
         this.mobsList = [];
         this.mistList = [];
         this.harvestablesNotGood = [];
+        this.recentLivingResources = [];
     }
 }

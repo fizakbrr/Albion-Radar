@@ -3,6 +3,10 @@ const BufferCursor = require('buffercursor');
 const Protocol16Deserializer = require('./Protocol16Deserializer');
 const Protocol18Deserializer = require('./Protocol18Deserializer');
 
+// ponytail: log-once guards so wire-format drift is visible without spamming the console.
+const warnedUnknownCommandTypes = new Set();
+let warnedProtocol18Fallback = false;
+
 class PhotonCommand {
 	[key: string]: any;
 
@@ -67,6 +71,12 @@ class PhotonCommand {
 				break;
 			case 4:
 				break;
+			default:
+				if (!warnedUnknownCommandTypes.has(this.commandType)) {
+					warnedUnknownCommandTypes.add(this.commandType);
+					console.warn(`[photon] Ignoring unrecognized command type ${this.commandType}.`);
+				}
+				break;
 		}
 	}
 
@@ -90,7 +100,11 @@ class PhotonCommand {
 		try {
 			this.data = Protocol18Deserializer.deserializeReliable(buffer);
 			this.messageType = this.data.messageType;
-		} catch {
+		} catch (error) {
+			if (!warnedProtocol18Fallback) {
+				warnedProtocol18Fallback = true;
+				console.warn('[photon] Protocol18 parse failed, falling back to Protocol16:', error);
+			}
 			return false;
 		}
 

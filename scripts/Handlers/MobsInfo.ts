@@ -88,14 +88,14 @@ export class MobsInfo{
         this.addItem(384, 5, EnemyType.LivingSkinnable, "hide"); // T5_MOB_TREASURE_GIANTSNAKE
         this.addItem(385, 6, EnemyType.LivingSkinnable, "hide"); // T6_MOB_TREASURE_DRAGON
 
-        // Roads hide ids stay disabled until the 322 collision with CRYSTALSPIDER is resolved.
-        /*this.addItem(322, 1, EnemyType.LivingSkinnable, "hide"); // SALAMANDER
+        // 322 collides with CRYSTALSPIDER. Keep it resolved by packet names in MobsHandler.
+        /*this.addItem(322, 1, EnemyType.LivingSkinnable, "hide"); // SALAMANDER*/
         this.addItem(323, 3, EnemyType.LivingSkinnable, "hide"); // STAG
         this.addItem(324, 4, EnemyType.LivingSkinnable, "hide"); // DIREWOLF
         this.addItem(325, 5, EnemyType.LivingSkinnable, "hide"); // BISON
         this.addItem(326, 6, EnemyType.LivingSkinnable, "hide"); // OWL
         this.addItem(327, 7, EnemyType.LivingSkinnable, "hide"); // DIREBEAR
-        this.addItem(328, 8, EnemyType.LivingSkinnable, "hide"); // BASILISK*/
+        this.addItem(328, 8, EnemyType.LivingSkinnable, "hide"); // BASILISK
 
         // Mists
         this.addItem(330, 1, EnemyType.LivingSkinnable, "hide"); // WOLPERTINGER

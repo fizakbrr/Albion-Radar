@@ -1,4 +1,5 @@
 import { DrawingUtils } from '../Utils/DrawingUtils.js';
+import { HarvestableType } from '../Handlers/HarvestablesHandler.js';
 
 export class HarvestablesDrawing extends DrawingUtils  {
 
@@ -30,6 +31,54 @@ export class HarvestablesDrawing extends DrawingUtils  {
 
     }
 
+    getResourceImagePrefix(harvestable)
+    {
+        switch (harvestable.resourceType)
+        {
+            case HarvestableType.Fiber:
+                return "fiber";
+            case HarvestableType.Hide:
+                return "hide";
+            case HarvestableType.Log:
+                return "Logs";
+            case HarvestableType.Ore:
+                return "ore";
+            case HarvestableType.Rock:
+                return "rock";
+            default:
+                break;
+        }
+
+        const type = harvestable.type;
+
+        if (type >= 0 && type <= 5)
+            return "Logs";
+
+        if (type >= 6 && type <= 10)
+            return "rock";
+
+        if (type >= 11 && type <= 14)
+            return "fiber";
+
+        if (type >= 15 && type <= 22)
+            return "hide";
+
+        if (type >= 23 && type <= 27)
+            return "ore";
+
+        return "";
+    }
+
+    getHarvestableImageName(harvestable)
+    {
+        const resourcePrefix = this.getResourceImagePrefix(harvestable);
+
+        if (!resourcePrefix)
+            return undefined;
+
+        return resourcePrefix + "_" + harvestable.tier + "_" + harvestable.charges;
+    }
+
     invalidate(ctx, harvestables)
     {
         for (const harvestableOne of harvestables)
@@ -37,30 +86,7 @@ export class HarvestablesDrawing extends DrawingUtils  {
             if (harvestableOne.size <= 0) continue;
 
             const type = harvestableOne.type;
-
-            let draw = undefined;
-
-            
-            if (type >= 0 && type <= 5)
-            {
-                draw = "Logs_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            else if (type >= 6 && type <= 10)
-            {
-                draw = "rock_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            if (type >= 11 && type <= 15)
-            {
-                draw = "fiber_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            else if (type >= 16 && type <= 22)
-            {
-                draw = "hide_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            else if (type >= 23 && type <= 27)
-            {
-                draw = "ore_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
+            const draw = this.getHarvestableImageName(harvestableOne);
 
             if (draw === undefined)
                 continue;
@@ -81,8 +107,8 @@ export class HarvestablesDrawing extends DrawingUtils  {
                 case 4: tier = "IV"; break;
                 case 5: tier = "V"; break;
                 case 6: tier = "VI"; break;
-                case 6: tier = "VII"; break;
-                case 6: tier = "VIII"; break;
+                case 7: tier = "VII"; break;
+                case 8: tier = "VIII"; break;
 
                 default:
                     tier = "";

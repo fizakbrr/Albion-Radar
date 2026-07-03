@@ -96,6 +96,7 @@ mobsHandler.updateMobInfo(mobsInfo.moblist);
 
 
 const harvestablesHandler = new HarvestablesHandler(settings);
+harvestablesHandler.setLivingResourceSource(mobsHandler);
 const playersHandler = new PlayersHandler(settings);
 
 const wispCageHandler = new WispCageHandler(settings);
@@ -148,13 +149,42 @@ const debugState = {
             hasPosition: Number.isFinite(player.posX) && Number.isFinite(player.posY),
         })),
         harvestables: harvestablesHandler.harvestableList.length,
+        harvestableDetails: harvestablesHandler.getHarvestableList().map(harvestable => ({
+            id: harvestable.id,
+            type: harvestable.type,
+            resourceType: harvestable.resourceType,
+            tier: harvestable.tier,
+            charges: harvestable.charges,
+            size: harvestable.size,
+            posX: harvestable.posX,
+            posY: harvestable.posY,
+        })),
         mobs: mobsHandler.mobsList.length,
+        mobDetails: mobsHandler.getMobList().map(mob => ({
+            id: mob.id,
+            typeId: mob.typeId,
+            type: mob.type,
+            name: mob.name,
+            tier: mob.tier,
+            enchantmentLevel: mob.enchantmentLevel,
+            posX: mob.posX,
+            posY: mob.posY,
+        })),
+        hiddenLivingResources: mobsHandler.harvestablesNotGood.map(mob => ({
+            id: mob.id,
+            typeId: mob.typeId,
+            type: mob.type,
+            name: mob.name,
+            tier: mob.tier,
+            enchantmentLevel: mob.enchantmentLevel,
+            posX: mob.posX,
+            posY: mob.posY,
+        })),
+        recentLivingResources: mobsHandler.getRecentLivingResources(),
         mists: mobsHandler.mistList.length,
         chests: chestsHandler.chestsList.length,
     }),
 };
-(window as any).zqRadarDebug = (window as any).camelRadarDebug;
-      
 socket.addEventListener('open', (event) => {
   updateConnectionStatus('Connected to local WebSocket stream', 'connected');
 });
@@ -200,6 +230,9 @@ socket.addEventListener('message', (event) => {
     case "event":
         debugState.events[debugCode] = (debugState.events[debugCode] || 0) + 1;
         onEvent(parameters);
+        break;
+
+    case "items":
         break;
 
     case "response":
@@ -461,7 +494,7 @@ function update() {
     harvestablesHandler.removeNotInRange(lpX, lpY);
     harvestablesDrawing.interpolate(harvestablesHandler.harvestableList, lpX, lpY, t);
 
-
+    mobsHandler.refreshLivingResources();
     mobsDrawing.interpolate(mobsHandler.mobsList, mobsHandler.mistList, lpX, lpY, t);
 
 
@@ -516,7 +549,7 @@ function ClearHandlers()
     harvestablesHandler.Clear();
     mobsHandler.Clear();
     playersHandler.Clear();
-    wispCageHandler.CLear();
+    wispCageHandler.Clear();
 }
 
 setDrawingViews();

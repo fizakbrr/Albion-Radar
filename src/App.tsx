@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -351,6 +351,7 @@ function AppShell({
                   <SheetContent side="left" className="w-80 p-0">
                     <SheetHeader className="sr-only">
                       <SheetTitle>Camel Radar navigation</SheetTitle>
+                      <SheetDescription>Navigation links for Camel Radar pages</SheetDescription>
                     </SheetHeader>
                     <div className="flex h-full flex-col gap-5 p-5">
                       <BrandButton onClick={() => navigate("/home")} />
@@ -641,13 +642,13 @@ function ResourcesPage() {
       <PageHeader
         eyebrow="Harvestables"
         title="Resource filters without visual clutter."
-        description="Enable tiers and enchant levels for static and living resources. Unavailable low-tier enchant cells stay disabled."
+        description="Enable tiers and enchant levels for resource objects. Node and corpse filters also match the live source mob before it becomes harvestable."
       />
 
       <Tabs defaultValue="static" className="grid gap-4">
         <TabsList className="w-fit">
-          <TabsTrigger value="static">Static resources</TabsTrigger>
-          <TabsTrigger value="living">Living resources</TabsTrigger>
+          <TabsTrigger value="static">Nodes and corpses</TabsTrigger>
+          <TabsTrigger value="living">Live resource mobs</TabsTrigger>
           <TabsTrigger value="debug">Debug</TabsTrigger>
         </TabsList>
 
